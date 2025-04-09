@@ -40,14 +40,14 @@ st.markdown("""
 # --- ABOUT ME ---
 st.header("📌 About Me")
 st.write("I'm a final-year undergraduate student passionate about transforming theoretical knowledge into real-world solutions. I enjoy problem-solving, logical thinking, and exploring new tools and technologies. Always curious to learn how things work, I've worked on both small and large-scale projects—feel free to check them out!")
-# --- RESUME DOWNLOAD (Optional) ---
-# with open("resume.pdf", "rb") as file:
-#     btn = st.download_button(
-#         label="📄 Download Resume",
-#         data=file,
-#         file_name="Tanisha_Sinha_Resume.pdf",
-#         mime="application/pdf"
-#     )
+--- RESUME DOWNLOAD (Optional) ---
+with open("resume.pdf", "rb") as file:
+    btn = st.download_button(
+        label="📄 Download Resume",
+        data=file,
+        file_name="RESUME(Data Analytics).pdf",
+        mime="application/pdf"
+    )
 
 # --- SKILLS ---
 st.header("🛠 Skills & Tools")
@@ -92,13 +92,13 @@ st.markdown("""
 # --- Mini PROJECTS ---
 st.header("Quick Builds")
 projects = {
-    "Pizza-Sales-Dashboard": """An interactive dashboard that visualizes pizza sales performance using key metrics like revenue, top-selling items, and peak order times.
+    "Pizza Sales Dashboard": """An interactive dashboard that visualizes pizza sales performance using key metrics like revenue, top-selling items, and peak order times.
     \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
-    "Dairy-Sales-Analysis": """This repository contains a Power BI dashboard for analyzing dairy farm performance, product sales, and distribution patterns.
+    "Dairy Sales Analysis": """This repository contains a Power BI dashboard for analyzing dairy farm performance, product sales, and distribution patterns.
     \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
-    "Maven-Market-Analysis": """Performed data-driven analysis to uncover sales trends, customer behavior, and market insights for strategic decision-making.
+    "Maven Market Analysis": """Performed data-driven analysis to uncover sales trends, customer behavior, and market insights for strategic decision-making.
     \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
-    "Spotify-Dashboard": """Visualized Spotify streaming data to analyze top tracks, artists, genres, and listening trends over time.",
+    "Spotify Dashboard": """Visualized Spotify streaming data to analyze top tracks, artists, genres, and listening trends over time.",
     \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
 }
 for project, desc in projects.items():
@@ -111,9 +111,9 @@ for project, desc in projects.items():
 #Major projects        
 st.header("Advance Builds")
 projects = {
-    "Performance-Analysis-of-Apache-Spark-Job-Schedulers-for-Big-Data-Processing": """Conducted a comparative analysis of Apache Spark's job schedulers including FIFO, Fair, and Capacity. Evaluated performance based on execution time, resource utilization, and workload distribution under varying conditions. The study provides insights to optimize scheduler selection for efficient big data processing.
+    "Performance Analysis of Apache Spark Job Schedulers for Big Data Processing": """Conducted a comparative analysis of Apache Spark's job schedulers including FIFO, Fair, and Capacity. Evaluated performance based on execution time, resource utilization, and workload distribution under varying conditions. The study provides insights to optimize scheduler selection for efficient big data processing.
     \n **Tech Stack:** Hadoop, Apache Spark, Big Data Analytics, Scheduling, Big data Processing, PySpark""",
-    "Predictive-Maintenance-for-Industrial-Machinery [Live Demo](https://predictive-maintenance-for-industrial-machinery.streamlit.app/) ": """This project is a Streamlit-based web application that leverages machine learning models to predict potential failures in industrial machinery using historical sensor data. It helps manufacturers and engineers take proactive maintenance actions, reducing downtime and operational costs.
+    "Predictive Maintenance for Industrial Machinery [Live Demo](https://predictive-maintenance-for-industrial-machinery.streamlit.app/) ": """This project is a Streamlit-based web application that leverages machine learning models to predict potential failures in industrial machinery using historical sensor data. It helps manufacturers and engineers take proactive maintenance actions, reducing downtime and operational costs.
     \n **Tech Stack:** Python, MySQL, Machine Learning, Streamlit, Matplotlib, pandas, NumPy, Scikit-Learn, Seaborn, joblib, mysql-connector-python""",
     # "E-Commerce Recommendation System": "Collaborative filtering & deep learning-based recommendations.",
     # "Healthcare Readmission Prediction": "ML model to predict patient readmission probability.",
@@ -161,6 +161,12 @@ certifications = [
         "issuer": "HackerRank",
         "year": "2024",
         "link": "https://www.hackerrank.com/certificates/0222347779da"
+    },
+    {
+        "title": "Google Cloud Study Jams",
+        "issuer": "Google",
+        "year": "2023",
+        "link": "https://drive.google.com/file/d/1G2-ntkJG_MnhspTQz9f0dOKwVaSSuK6X/view?usp=sharing"
     }
 ]
 
