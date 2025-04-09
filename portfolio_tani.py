@@ -40,7 +40,8 @@ st.markdown("""
 # --- ABOUT ME ---
 st.header("📌 About Me")
 st.write("I'm a final-year undergraduate student passionate about transforming theoretical knowledge into real-world solutions. I enjoy problem-solving, logical thinking, and exploring new tools and technologies. Always curious to learn how things work, I've worked on both small and large-scale projects—feel free to check them out!")
---- RESUME DOWNLOAD (Optional) ---
+
+#--- RESUME DOWNLOAD (Optional) ---
 with open("resume.pdf", "rb") as file:
     btn = st.download_button(
         label="📄 Download Resume",
