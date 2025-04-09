@@ -3,11 +3,6 @@ from PIL import Image
 import base64
 from io import BytesIO
 
-from PIL import Image
-import streamlit as st
-import base64
-from io import BytesIO
-
 # --- PAGE CONFIGURATION ---
 st.set_page_config(page_title="Tanisha Sinha | Portfolio", page_icon="📊", layout="wide")
 
@@ -28,7 +23,7 @@ st.markdown(f"""
         <img src="data:image/jpeg;base64,{encoded_image}" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"/>
         <div>
             <h1 style="margin-bottom: 5px;">Tanisha Sinha</h1>
-            <p style="font-size: 18px; margin-top: 0;">UG @CSVTU'25 | Data Scientist | AI & ML | Business Intelligence</p>
+            <p style="font-size: 18px; margin-top: 0;">UG @CSVTU'25 | Data Science | Artificial Intelligence | Machine Learning  </p>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -59,48 +54,52 @@ st.header("🛠 Skills & Tools")
 # skills = ["C++","Python", "SQL", "Streamlit", "Power BI", "Apache Kafka", "Git", "Machine Learning", "Excel"]
 # st.write(", ".join(skills))
 st.markdown("""
-    - Power BI  
+    - C++
+    - Python        
+    - Power BI 
+    - MySQL 
     - Apache Kafka  
     - Streamlit  
-    - Hugging Face  
-    - Docker  
-    - Scikit-learn  
-    - TensorFlow / PyTorch
+    - Excel
+    - Git  
     """)
 
-# Section 4: Cloud Services
-with st.expander("☁️ Cloud Services"):
-    st.markdown("""
-    - AWS (Amazon Web Services)  
-    - Microsoft Azure (if applicable)
-    """)
+# # Section 4: Cloud Services
+# with st.expander("☁️ Cloud Services"):
+#     st.markdown("""
+#     - AWS (Amazon Web Services)  
+#     - Microsoft Azure (if applicable)
+#     """)
 
-# Section 5: Databases
-with st.expander("🗃️ Databases"):
-    st.markdown("""
-    - MySQL  
-    - PostgreSQL  
-    - MongoDB
-    """)
+# # Section 5: Databases
+# with st.expander("🗃️ Databases"):
+#     st.markdown("""
+#     - MySQL  
+#     - PostgreSQL  
+#     - MongoDB
+#     """)
 
-# Section 6: Soft Skills
-with st.expander("🤝 Soft Skills"):
-    st.markdown("""
-    - Communication  
-    - Problem-Solving  
-    - Leadership  
-    - Team Collaboration  
-    - Adaptability
-    """)
+# # Section 6: Soft Skills
+# with st.expander("🤝 Soft Skills"):
+#     st.markdown("""
+#     - Communication  
+#     - Problem-Solving  
+#     - Leadership  
+#     - Team Collaboration  
+#     - Adaptability
+#     """)
 
 # --- Mini PROJECTS ---
 st.header("Quick Builds")
 projects = {
-    "Pizza-Sales-Dashboard": "An interactive dashboard that visualizes pizza sales performance using key metrics like revenue, top-selling items, and peak order times.",
-    "Dairy-Sales-Analysis": "This repository contains a Power BI dashboard for analyzing dairy farm performance, product sales, and distribution patterns.",
-    "Maven-Market-Analysis": "Performed data-driven analysis to uncover sales trends, customer behavior, and market insights for strategic decision-making.",
-    "Spotify-Dashboard": "Visualized Spotify streaming data to analyze top tracks, artists, genres, and listening trends over time.",
-    #"Fraud Detection in Transactions": "Anomaly detection using Isolation Forest & Random Forest."
+    "Pizza-Sales-Dashboard": """An interactive dashboard that visualizes pizza sales performance using key metrics like revenue, top-selling items, and peak order times.
+    \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
+    "Dairy-Sales-Analysis": """This repository contains a Power BI dashboard for analyzing dairy farm performance, product sales, and distribution patterns.
+    \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
+    "Maven-Market-Analysis": """Performed data-driven analysis to uncover sales trends, customer behavior, and market insights for strategic decision-making.
+    \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
+    "Spotify-Dashboard": """Visualized Spotify streaming data to analyze top tracks, artists, genres, and listening trends over time.",
+    \n **Tech Stack:** Power BI Desktop, Power Query, Data Modeling, DAX (Data Analysis Expressions), Interactive Visualizations""",
 }
 for project, desc in projects.items():
     with st.expander(f"🔹 {project}"):
@@ -112,8 +111,10 @@ for project, desc in projects.items():
 #Major projects        
 st.header("Advance Builds")
 projects = {
-    "Performance-Analysis-of-Apache-Spark-Job-Schedulers-for-Big-Data-Processing": "Conducted a comparative analysis of Apache Spark's job schedulers including FIFO, Fair, and Capacity. Evaluated performance based on execution time, resource utilization, and workload distribution under varying conditions. The study provides insights to optimize scheduler selection for efficient big data processing.",
-    # "Stock Price Forecasting": "Time series forecasting with ARIMA & Prophet.",
+    "Performance-Analysis-of-Apache-Spark-Job-Schedulers-for-Big-Data-Processing": """Conducted a comparative analysis of Apache Spark's job schedulers including FIFO, Fair, and Capacity. Evaluated performance based on execution time, resource utilization, and workload distribution under varying conditions. The study provides insights to optimize scheduler selection for efficient big data processing.
+    \n **Tech Stack:**Hadoop, Apache Spark, Big Data Analytics, Scheduling, Big data Processing, PySpark""",
+    "Predictive-Maintenance-for-Industrial-Machinery [Live Demo](https://predictive-maintenance-for-industrial-machinery.streamlit.app/) ": """This project is a Streamlit-based web application that leverages machine learning models to predict potential failures in industrial machinery using historical sensor data. It helps manufacturers and engineers take proactive maintenance actions, reducing downtime and operational costs.
+    \n **Tech Stack:** Python, MySQL, Machine Learning, Streamlit, Matplotlib, pandas, NumPy, Scikit-Learn, Seaborn, joblib, mysql-connector-python""",
     # "E-Commerce Recommendation System": "Collaborative filtering & deep learning-based recommendations.",
     # "Healthcare Readmission Prediction": "ML model to predict patient readmission probability.",
     # "Fraud Detection in Transactions": "Anomaly detection using Isolation Forest & Random Forest."
@@ -164,10 +165,12 @@ certifications = [
 ]
 
 for cert in certifications:
-    st.subheader(f"{cert['title']}")
-    st.write(f"**Issued by:** {cert['issuer']}  \n**Year:** {cert['year']}")
-    st.markdown(f"[🔗 View Certificate]({cert['link']})")
-    st.markdown("---")
+    st.markdown(
+        f"**{cert['title']}** | *{cert['issuer']}* | {cert['year']} &nbsp;&nbsp; "
+        f"[🔗 View Certificate]({cert['link']})",
+        unsafe_allow_html=True
+    )
+
 
 
 # --- Achievements / Awards Section ---
@@ -183,14 +186,58 @@ awards = [
 for award in awards:
     st.markdown(f"- {award}")
 
+# st.header("💬 Testimonials & Recommendations")
 
 
-# --- CONTACT ---
+# # --- Testimonials Section ---
+
+# st.markdown("""
+# Here’s what others say about me.  
+# These recommendations reflect my dedication, collaboration, and enthusiasm for learning.
+# """)
+
+# testimonials = [
+#     {
+#         "name": "Dr. Anita Sharma",
+#         "role": "Professor, IIIT NR",
+#         "feedback": "Tanisha has shown exceptional dedication and analytical skills throughout her research internship. Her enthusiasm for data science is commendable.",
+#         "linkedin": "https://www.linkedin.com/in/exampleprofessor"
+#     },
+#     {
+#         "name": "Ravi Verma",
+#         "role": "Mentor, Data Science Bootcamp",
+#         "feedback": "A quick learner and problem solver. She contributed valuable insights to our team discussions and project workflows.",
+#         "linkedin": "https://www.linkedin.com/in/examplementor"
+#     },
+#     {
+#         "name": "Priya Mehta",
+#         "role": "Peer, Project Teammate",
+#         "feedback": "Working with Tanisha was a pleasure. She’s organized, focused, and always brings creative data solutions to the table.",
+#         "linkedin": None
+#     }
+# ]
+
+# for t in testimonials:
+#     with st.container():
+#         st.markdown(f"**{t['name']}** — *{t['role']}*")
+#         st.markdown(f"🗣️ _{t['feedback']}_")
+#         if t['linkedin']:
+#             st.markdown(f"[🔗 LinkedIn Recommendation]({t['linkedin']})", unsafe_allow_html=True)
+#         st.markdown("---")
+        
+#--- Contact Me ---
+
+
 st.header("📬 Contact Me")
-contact_form = st.form("contact_form")
-contact_form.text_input("Your Name")
-contact_form.text_input("Your Email")
-contact_form.text_area("Your Message")
-submit_button = contact_form.form_submit_button("Send Message")
-if submit_button:
-    st.success("✅ Message Sent Successfully!")
+st.markdown("""
+If you'd like to **share feedback**, ask a **question**, or just **connect with me**, feel free to drop a message below!  
+I'll get back to you as soon as I can.""")
+
+st.markdown("""
+<form action="https://formsubmit.co/tanisha02sinha@gmail.com" method="POST">
+    <input type="text" name="name" placeholder="Your Name" required style="width: 100%; padding: 8px;"><br><br>
+    <input type="email" name="email" placeholder="Your Email" required style="width: 100%; padding: 8px;"><br><br>
+    <textarea name="message" placeholder="Your Message" required style="width: 100%; padding: 8px;"></textarea><br><br>
+    <button type="submit" style="padding: 8px 16px;">Send Message</button>
+</form>
+""", unsafe_allow_html=True)
