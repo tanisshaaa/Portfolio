@@ -112,7 +112,7 @@ for project, desc in projects.items():
 st.header("Advance Builds")
 projects = {
     "Performance-Analysis-of-Apache-Spark-Job-Schedulers-for-Big-Data-Processing": """Conducted a comparative analysis of Apache Spark's job schedulers including FIFO, Fair, and Capacity. Evaluated performance based on execution time, resource utilization, and workload distribution under varying conditions. The study provides insights to optimize scheduler selection for efficient big data processing.
-    \n **Tech Stack:**Hadoop, Apache Spark, Big Data Analytics, Scheduling, Big data Processing, PySpark""",
+    \n **Tech Stack:** Hadoop, Apache Spark, Big Data Analytics, Scheduling, Big data Processing, PySpark""",
     "Predictive-Maintenance-for-Industrial-Machinery [Live Demo](https://predictive-maintenance-for-industrial-machinery.streamlit.app/) ": """This project is a Streamlit-based web application that leverages machine learning models to predict potential failures in industrial machinery using historical sensor data. It helps manufacturers and engineers take proactive maintenance actions, reducing downtime and operational costs.
     \n **Tech Stack:** Python, MySQL, Machine Learning, Streamlit, Matplotlib, pandas, NumPy, Scikit-Learn, Seaborn, joblib, mysql-connector-python""",
     # "E-Commerce Recommendation System": "Collaborative filtering & deep learning-based recommendations.",
