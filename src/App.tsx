@@ -206,7 +206,11 @@ function DesktopIcon({ icon, label, onClick }: { icon: React.ReactNode, label: s
   return (
     <motion.div 
       className="desktop-icon"
+      role="button"
+      aria-label={`Open ${label}`}
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
       whileHover={{ scale: 1.1, y: -5 }}
       whileTap={{ scale: 0.95 }}
     >
@@ -259,9 +263,62 @@ function ProjectsSection() {
   );
 }
 
-function AppWindow({ title, onClose, children }: { title: string, onClose: () => void, children: React.ReactNode }) {
+function AppWindow({ title, onClose, icon, children }: { title: string, onClose: () => void, icon?: React.ReactNode, children: React.ReactNode }) {
+  const windowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      
+      if (!windowRef.current) return;
+      
+      const focusableElements = windowRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      
+      if (focusableElements.length === 0) return;
+      
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+      
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    
+    // Focus first element on mount
+    if (windowRef.current) {
+      const focusableElements = windowRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      } else {
+        windowRef.current.focus();
+      }
+    }
+    
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
     <motion.div 
+      ref={windowRef as any}
+      tabIndex={-1}
       className="app-window"
       initial={{ opacity: 0, scale: 0.8, x: "-50%", y: "-40%" }}
       animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
@@ -269,20 +326,16 @@ function AppWindow({ title, onClose, children }: { title: string, onClose: () =>
       transition={{ type: "spring", bounce: 0.2 }}
     >
       <div className="window-taskbar">
-        <div className="window-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div className="window-btn close-btn" onClick={onClose} title="Close"></div>
-          <div className="window-btn min-btn"></div>
-          <div className="window-btn max-btn"></div>
-          <motion.span 
-            initial={{ opacity: 0, x: -10 }} 
-            animate={{ opacity: 0.8, x: 0 }} 
-            transition={{ delay: 0.5 }}
-            style={{ marginLeft: '12px', fontSize: '0.75rem', color: '#ff5f56', fontWeight: 600, letterSpacing: '0.02em' }}
-          >
-            &larr; Click red button to go back
-          </motion.span>
+        <div className="window-title-container">
+          {icon && <div className="window-icon-small">{icon}</div>}
+          <span className="window-title-text">{title}</span>
         </div>
-        <div className="window-title">{title}</div>
+        <button className="window-close-btn" onClick={onClose} aria-label="Close window">
+          <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
       <div className="window-content">
         {children}
@@ -407,7 +460,7 @@ function App() {
   return (
     <ReactLenis root>
       {/* Hidden SVG Filter for Pixel Glitch Effect */}
-      <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
+      <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
         <filter id="pixelate-glitch">
           <feTurbulence type="fractalNoise" baseFrequency="0.02 0.8" numOctaves="1" result="noise">
             <animate attributeName="baseFrequency" values="0.02 0.8;0.05 0.1;0.01 0.9;0.02 0.8" dur="0.4s" repeatCount="indefinite" />
@@ -440,8 +493,8 @@ function App() {
             {/* Right Buttons Container */}
             <div className="nav-capsule-right">
               <button className="btn-resume-capsule" onClick={() => window.open(import.meta.env.BASE_URL + 'AI_ML_Engineer.pdf', '_blank')}>RESUME</button>
-              <button className="btn-mail-circle" onClick={() => window.location.href = 'mailto:tanishaasinha02@gmail.com'}>
-                <svg viewBox="0 0 24 20" width="18" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <button className="btn-mail-circle" aria-label="Send email" onClick={() => window.location.href = 'mailto:tanishaasinha02@gmail.com'}>
+                <svg aria-hidden="true" viewBox="0 0 24 20" width="18" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
@@ -486,6 +539,55 @@ function App() {
         </div>
       </div>
 
+      {/* Animated Scroll Hint */}
+      <AnimatePresence>
+        {!isInsideScreen && (
+          <motion.div
+            className="hero-scroll"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 15 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            onClick={() => {
+              window.scrollTo({
+                top: window.innerHeight * 1.5,
+                behavior: 'smooth'
+              });
+            }}
+            role="button"
+            aria-label="Scroll to explore portfolio"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                window.scrollTo({
+                  top: window.innerHeight * 1.5,
+                  behavior: 'smooth'
+                });
+              }
+            }}
+          >
+            <span className="scroll-label">Scroll to explore</span>
+            <div className="scroll-arrow-container">
+              <svg 
+                className="bouncing-arrow" 
+                aria-hidden="true" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="var(--ink3)" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+              </svg>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Scroll spacer to trigger the 3D camera dive animation */}
       <div style={{ height: '200vh', pointerEvents: 'none' }} />
 
@@ -505,38 +607,100 @@ function App() {
                 <DesktopIcon 
                   label="Education" 
                   onClick={() => setActiveApp('education')} 
-                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>} 
+                  icon={<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>} 
                 />
                 <DesktopIcon 
                   label="Experience" 
                   onClick={() => setActiveApp('experience')} 
-                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} 
+                  icon={<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>} 
                 />
                 <DesktopIcon 
                   label="Skills" 
                   onClick={() => setActiveApp('skills')} 
-                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>} 
+                  icon={<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>} 
                 />
                 <DesktopIcon 
                   label="Projects" 
                   onClick={() => setActiveApp('projects')} 
-                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>} 
+                  icon={<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>} 
                 />
                 <DesktopIcon 
                   label="Socials" 
                   onClick={() => setActiveApp('socials')} 
-                  icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>} 
+                  icon={<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>} 
                 />
+              </div>
+
+              {/* Desktop Sticky Preview Widgets */}
+              <div className="desktop-widgets">
+                {/* Active Experience Card */}
+                <div 
+                  className="widget-card widget-experience" 
+                  onClick={() => setActiveApp('experience')} 
+                  role="button" 
+                  tabIndex={0} 
+                  aria-label="Experience overview. Click to open Experience app."
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp('experience')}
+                >
+                  <div className="widget-header">
+                    <span className="widget-badge">EXPERIENCE PREVIEW</span>
+                    <span className="widget-action-hint">Explore App ↗</span>
+                  </div>
+                  <h3 className="widget-title">AI/ML Engineer</h3>
+                  <h4 className="widget-subtitle">4th Orbit • Jul 2025 – Present</h4>
+                  <p className="widget-text">
+                    Built recruitment & readiness ML cores, Own end-to-end model development, custom NLP parsers, and Hugging Face/LangChain prompt-chained pipelines.
+                  </p>
+                </div>
+
+                {/* Active Projects Card */}
+                <div 
+                  className="widget-card widget-projects" 
+                  onClick={() => setActiveApp('projects')} 
+                  role="button" 
+                  tabIndex={0} 
+                  aria-label="Projects list. Click to open Projects app."
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp('projects')}
+                >
+                  <div className="widget-header">
+                    <span className="widget-badge">LATEST PROJECTS</span>
+                    <span className="widget-action-hint">View All ↗</span>
+                  </div>
+                  <div className="widget-project-item">
+                    <span className="project-dot"></span>
+                    <div>
+                      <div className="widget-project-title">AI Data Analytics BI Platform</div>
+                      <div className="widget-project-desc">Interactive Streamlit dashboard & ARIMA demand forecasting.</div>
+                    </div>
+                  </div>
+                  <div className="widget-project-item">
+                    <span className="project-dot"></span>
+                    <div>
+                      <div className="widget-project-title">Industrial Predictive Maintenance</div>
+                      <div className="widget-project-desc">Failure prediction on 100K+ records with 88% sensor accuracy.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <AnimatePresence>
                 {activeApp === 'education' && (
-                  <AppWindow key="education" title="Education.exe" onClose={() => setActiveApp(null)}>
+                  <AppWindow 
+                    key="education" 
+                    title="Education.exe" 
+                    onClose={() => setActiveApp(null)}
+                    icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>}
+                  >
                     <EducationCard />
                   </AppWindow>
                 )}
                 {activeApp === 'experience' && (
-                  <AppWindow key="experience" title="Experience.exe" onClose={() => setActiveApp(null)}>
+                  <AppWindow 
+                    key="experience" 
+                    title="Experience.exe" 
+                    onClose={() => setActiveApp(null)}
+                    icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>}
+                  >
                     <div className="flashcards-wrapper">
                       {experiences.map((exp, index) => (
                         <ExperienceCard key={index} exp={exp} />
@@ -545,36 +709,51 @@ function App() {
                   </AppWindow>
                 )}
                 {activeApp === 'skills' && (
-                  <AppWindow key="skills" title="Skills.exe" onClose={() => setActiveApp(null)}>
+                  <AppWindow 
+                    key="skills" 
+                    title="Skills.exe" 
+                    onClose={() => setActiveApp(null)}
+                    icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>}
+                  >
                     <SkillsSection />
                   </AppWindow>
                 )}
                 {activeApp === 'projects' && (
-                  <AppWindow key="projects" title="Projects.exe" onClose={() => setActiveApp(null)}>
+                  <AppWindow 
+                    key="projects" 
+                    title="Projects.exe" 
+                    onClose={() => setActiveApp(null)}
+                    icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>}
+                  >
                     <ProjectsSection />
                   </AppWindow>
                 )}
                 {activeApp === 'socials' && (
-                  <AppWindow key="socials" title="Social_Profiles.exe" onClose={() => setActiveApp(null)}>
+                  <AppWindow 
+                    key="socials" 
+                    title="Social_Profiles.exe" 
+                    onClose={() => setActiveApp(null)}
+                    icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>}
+                  >
                     <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
                       <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '2rem', fontFamily: 'var(--ff)', textAlign: 'center' }}>Connect With Me</h2>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         <a href="mailto:tanishaasinha02@gmail.com" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff00c1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff00c1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>Email</span>
                             <span style={{ color: 'rgba(255,255,255,0.6)' }}>tanishaasinha02@gmail.com</span>
                           </div>
                         </a>
-                        <a href="https://linkedin.com/in/tanishaasinha02" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077B5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        <a href="https://www.linkedin.com/in/tanishasinhaa" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
+                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077B5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>LinkedIn</span>
                             <span style={{ color: 'rgba(255,255,255,0.6)' }}>Connect professionally</span>
                           </div>
                         </a>
-                        <a href="https://github.com/tanishaasinha02" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                        <a href="https://github.com/tanisshaaa" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
+                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>GitHub</span>
                             <span style={{ color: 'rgba(255,255,255,0.6)' }}>Check out my repositories</span>
@@ -589,46 +768,71 @@ function App() {
 
             <div className="taskbar">
               <div className="taskbar-left">
-                <div className="taskbar-btn start-btn">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>
+                <div className="taskbar-btn start-btn" title="Start Menu">
+                  <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 0h8v8h-8z"/></svg>
                 </div>
                 <div className="taskbar-search">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   Search
                 </div>
               </div>
               
               <div className="taskbar-center">
-                {activeApp === 'education' && (
-                  <div className="taskbar-btn active">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                  </div>
-                )}
-                {activeApp === 'experience' && (
-                  <div className="taskbar-btn active">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                  </div>
-                )}
-                {activeApp === 'skills' && (
-                  <div className="taskbar-btn active">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                  </div>
-                )}
-                {activeApp === 'projects' && (
-                  <div className="taskbar-btn active">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-                  </div>
-                )}
-                {activeApp === 'socials' && (
-                  <div className="taskbar-btn active">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                  </div>
-                )}
+                <div 
+                  className={`taskbar-btn ${activeApp === 'education' ? 'active' : ''}`}
+                  title="Education (B.Tech Computer Science)"
+                  onClick={() => setActiveApp(activeApp === 'education' ? null : 'education')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp(activeApp === 'education' ? null : 'education')}
+                >
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </div>
+                <div 
+                  className={`taskbar-btn ${activeApp === 'experience' ? 'active' : ''}`}
+                  title="Experience (Work history at 4th Orbit)"
+                  onClick={() => setActiveApp(activeApp === 'experience' ? null : 'experience')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp(activeApp === 'experience' ? null : 'experience')}
+                >
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
+                <div 
+                  className={`taskbar-btn ${activeApp === 'skills' ? 'active' : ''}`}
+                  title="Skills (AI, ML, Backend, DevOps)"
+                  onClick={() => setActiveApp(activeApp === 'skills' ? null : 'skills')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp(activeApp === 'skills' ? null : 'skills')}
+                >
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div 
+                  className={`taskbar-btn ${activeApp === 'projects' ? 'active' : ''}`}
+                  title="Projects (AI Platforms & Analytics)"
+                  onClick={() => setActiveApp(activeApp === 'projects' ? null : 'projects')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp(activeApp === 'projects' ? null : 'projects')}
+                >
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                </div>
+                <div 
+                  className={`taskbar-btn ${activeApp === 'socials' ? 'active' : ''}`}
+                  title="Social Profiles & Contact"
+                  onClick={() => setActiveApp(activeApp === 'socials' ? null : 'socials')}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && setActiveApp(activeApp === 'socials' ? null : 'socials')}
+                >
+                  <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                </div>
               </div>
 
               <div className="taskbar-right">
                 <div className="taskbar-btn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
                 </div>
                 <TaskbarClock />
               </div>
@@ -654,15 +858,15 @@ function App() {
               transition={{ type: "spring", bounce: 0.3 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <button className="glass-modal-close" onClick={() => setIsAboutOpen(false)}>×</button>
+              <button className="glass-modal-close" aria-label="Close about modal" onClick={() => setIsAboutOpen(false)}>×</button>
               <div className="glass-modal-socials">
-                <a href="https://linkedin.com/in/tanishasinha" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                <a href="https://www.linkedin.com/in/tanishasinhaa" target="_blank" rel="noreferrer">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
                     <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                   </svg>
                 </a>
-                <a href="https://github.com/tanishasinha" target="_blank" rel="noreferrer">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                <a href="https://github.com/tanisshaaa" target="_blank" rel="noreferrer">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                   </svg>
                 </a>
