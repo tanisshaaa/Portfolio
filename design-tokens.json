@@ -1,0 +1,359 @@
+{
+  "color": {
+    "obsidian-canvas": {
+      "$value": "#0b0c0e",
+      "$type": "color",
+      "$description": "Obsidian Canvas — True Adelina Deep Matte Black Canvas backdrop"
+    },
+    "deep-aubergine": {
+      "$value": "#131418",
+      "$type": "color",
+      "$description": "Deep Aubergine — Elevated Graphite Card Surface backdrop"
+    },
+    "charcoal-smoke": {
+      "$value": "#303136",
+      "$type": "color",
+      "$description": "Charcoal Smoke — Subtle dark graphite details and borders"
+    },
+    "bright-white": {
+      "$value": "#ffffff",
+      "$type": "color",
+      "$description": "Bright White — High-contrast display titles and core labels"
+    },
+    "ash-gray": {
+      "$value": "#18191e",
+      "$type": "color",
+      "$description": "Ash Gray — Slightly lighter graphite elevation for inputs and panels"
+    },
+    "off-white-mist": {
+      "$value": "rgba(255, 255, 255, 0.08)",
+      "$type": "color",
+      "$description": "Off-White Mist — Subtle outline borders mapping bento spaces"
+    },
+    "soft-stone": {
+      "$value": "#1b171c",
+      "$type": "color",
+      "$description": "Soft Stone — Subtle cards elevated with peach/pink hue tint"
+    },
+    "muted-lavender": {
+      "$value": "#b287fd",
+      "$type": "color",
+      "$description": "Muted Lavender — Vivid violet highlighting"
+    },
+    "electric-green": {
+      "$value": "#b287fd",
+      "$type": "color",
+      "$description": "Electric Green — Vivid violet highlighting brand color"
+    },
+    "goldenrod-pop": {
+      "$value": "#b287fd",
+      "$type": "color",
+      "$description": "Goldenrod Pop — Vivid violet highlighting brand color"
+    },
+    "bubblegum-pink": {
+      "$value": "#b287fd",
+      "$type": "color",
+      "$description": "Bubblegum Pink — Vivid violet highlighting brand color"
+    },
+    "lilac-jelly": {
+      "$value": "#b287fd",
+      "$type": "color",
+      "$description": "Lilac Jelly — Vivid violet highlighting brand color"
+    },
+    "mint-cream": {
+      "$value": "#151916",
+      "$type": "color",
+      "$description": "Mint Cream — Elevated cards with slate sage green tint"
+    },
+    "fairy-floss": {
+      "$value": "#1b171c",
+      "$type": "color",
+      "$description": "Fairy Floss — Elevated cards with peach/pink tint"
+    },
+    "butter-cream": {
+      "$value": "#18191e",
+      "$type": "color",
+      "$description": "Butter Cream — Dark elevated slate graphite panels"
+    },
+    "soft-mauve": {
+      "$value": "#16141c",
+      "$type": "color",
+      "$description": "Soft Mauve — Elevated cards with dark violet tint"
+    },
+    "midnight-ink": {
+      "$value": "#0b0c0e",
+      "$type": "color",
+      "$description": "Midnight Ink — Rich solid black matte details"
+    },
+    "cloud-gray": {
+      "$value": "#a0a0a8",
+      "$type": "color",
+      "$description": "Cloud Gray — Muted light gray for readable descriptions"
+    },
+    "dark-silver": {
+      "$value": "#64656c",
+      "$type": "color",
+      "$description": "Dark Silver — Secondary dark borders and outline frames"
+    }
+  },
+  "font": {
+    "geist": {
+      "$value": "Inter",
+      "$type": "fontFamily",
+      "$description": "Primary sans-serif geometric typeface for standard body descriptions, navigation controls, and user forms."
+    },
+    "geist-mono": {
+      "$value": "Roboto Mono",
+      "$type": "fontFamily",
+      "$description": "Used exclusively for code editors, database input commands, and terminal logging panels."
+    },
+    "arial-black": {
+      "$value": "Inter",
+      "$type": "fontFamily",
+      "$description": "Heavy geometric display typography used for huge headings (e.g. TANISHA) with massive font-weights."
+    },
+    "signature": {
+      "$value": "Bodoni Moda",
+      "$type": "fontFamily",
+      "$description": "Elegant script serif italic font used for the signature overlay signature Sinha."
+    }
+  },
+  "typography": {
+    "sm": {
+      "$value": {
+        "fontFamily": "Roboto Mono",
+        "fontSize": "14px",
+        "fontWeight": 500,
+        "lineHeight": 1.8
+      },
+      "$type": "typography",
+      "$description": "Typography step sm at 14px for codes"
+    },
+    "base": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": 1.6
+      },
+      "$type": "typography",
+      "$description": "Typography step base at 16px"
+    },
+    "base-2": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": 1.6
+      },
+      "$type": "typography",
+      "$description": "Typography step base-2 at 16px"
+    },
+    "base-3": {
+      "$value": {
+        "fontFamily": "Roboto Mono",
+        "fontSize": "16px",
+        "fontWeight": 500,
+        "lineHeight": 1.8
+      },
+      "$type": "typography",
+      "$description": "Typography step base-3 at 16px"
+    },
+    "base-4": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": 1.6
+      },
+      "$type": "typography",
+      "$description": "Typography step base-4 at 16px"
+    },
+    "xl": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "20px",
+        "fontWeight": 400,
+        "lineHeight": 1.4
+      },
+      "$type": "typography",
+      "$description": "Typography step xl at 20px"
+    },
+    "xl-2": {
+      "$value": {
+        "fontFamily": "Bodoni Moda",
+        "fontSize": "20px",
+        "fontWeight": 700,
+        "lineHeight": 1.5
+      },
+      "$type": "typography",
+      "$description": "Typography step xl-2 at 20px"
+    },
+    "2xl": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "24px",
+        "fontWeight": 400,
+        "lineHeight": 1.3
+      },
+      "$type": "typography",
+      "$description": "Typography step 2xl at 24px"
+    },
+    "3xl": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "32px",
+        "fontWeight": 500,
+        "lineHeight": 1.25
+      },
+      "$type": "typography",
+      "$description": "Typography step 3xl at 32px"
+    },
+    "5xl": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "60px",
+        "fontWeight": 500,
+        "lineHeight": 1.15
+      },
+      "$type": "typography",
+      "$description": "Typography step 5xl at 60px"
+    },
+    "5xl-2": {
+      "$value": {
+        "fontFamily": "Inter",
+        "fontSize": "72px",
+        "fontWeight": 500,
+        "lineHeight": 1.1
+      },
+      "$type": "typography",
+      "$description": "Typography step 5xl-2 at 72px"
+    }
+  },
+  "spacing": {
+    "8": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "Spacing 8px"
+    },
+    "16": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "Spacing 16px"
+    },
+    "24": {
+      "$value": "24px",
+      "$type": "dimension",
+      "$description": "Spacing 24px"
+    },
+    "32": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$description": "Spacing 32px"
+    },
+    "48": {
+      "$value": "48px",
+      "$type": "dimension",
+      "$description": "Spacing 48px"
+    },
+    "64": {
+      "$value": "64px",
+      "$type": "dimension",
+      "$description": "Spacing 64px"
+    },
+    "96": {
+      "$value": "96px",
+      "$type": "dimension",
+      "$description": "Spacing 96px"
+    },
+    "112": {
+      "$value": "112px",
+      "$type": "dimension",
+      "$description": "Spacing 112px"
+    },
+    "unit": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "Base spacing unit"
+    }
+  },
+  "radius": {
+    "lg": {
+      "$value": "4px",
+      "$type": "dimension",
+      "$description": "Border radius lg for crisp boxes"
+    },
+    "2xl": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "Border radius 2xl"
+    },
+    "2xl-2": {
+      "$value": "12px",
+      "$type": "dimension",
+      "$description": "Border radius 2xl-2"
+    },
+    "3xl": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "Border radius 3xl"
+    },
+    "3xl-2": {
+      "$value": "24px",
+      "$type": "dimension",
+      "$description": "Border radius 3xl-2"
+    },
+    "full": {
+      "$value": "9999px",
+      "$type": "dimension",
+      "$description": "Border radius full"
+    },
+    "full-2": {
+      "$value": "9999px",
+      "$type": "dimension",
+      "$description": "Border radius full-2"
+    }
+  },
+  "shadow": {
+    "subtle": {
+      "$value": "rgba(0, 0, 0, 0.4) 0px 4px 12px 0px",
+      "$type": "shadow",
+      "$description": "Shadow elevation subtle"
+    },
+    "sm": {
+      "$value": "rgba(0, 0, 0, 0.6) 0px 8px 24px 0px",
+      "$type": "shadow",
+      "$description": "Shadow elevation sm"
+    }
+  },
+  "surface": {
+    "obsidian-canvas": {
+      "$value": "#0b0c0e",
+      "$type": "color",
+      "$description": "Surface level 0: True Adelina deep black matte backdrop"
+    },
+    "deep-aubergine": {
+      "$value": "#131418",
+      "$type": "color",
+      "$description": "Surface level 1: Slate graphite card panel backings"
+    },
+    "soft-stone": {
+      "$value": "#1b171c",
+      "$type": "color",
+      "$description": "Surface level 2: Peach highlights and active elements"
+    },
+    "ash-gray": {
+      "$value": "#18191e",
+      "$type": "color",
+      "$description": "Surface level 3: Lightest slate graphite surface for code panels"
+    }
+  },
+  "$extensions": {
+    "com.refero.extraction": {
+      "url": "https://builder.hostinger.com/templates?preview=adelina",
+      "siteName": "builder.hostinger.com",
+      "extractedAt": "2026-05-31T00:25:00Z",
+      "variant": "adelina-dark"
+    }
+  }
+}
