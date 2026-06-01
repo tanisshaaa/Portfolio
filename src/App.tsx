@@ -439,7 +439,7 @@ function App() {
 
             {/* Right Buttons Container */}
             <div className="nav-capsule-right">
-              <button className="btn-resume-capsule" onClick={() => window.open('/AI_ML_Engineer.pdf', '_blank')}>RESUME</button>
+              <button className="btn-resume-capsule" onClick={() => window.open(import.meta.env.BASE_URL + 'AI_ML_Engineer.pdf', '_blank')}>RESUME</button>
               <button className="btn-mail-circle" onClick={() => window.location.href = 'mailto:tanishaasinha02@gmail.com'}>
                 <svg viewBox="0 0 24 20" width="18" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -498,7 +498,7 @@ function App() {
           viewport={{ once: false, margin: "-10%" }}
           transition={{ duration: 1.0, ease: easeCustom }}
         >
-          <div className="os-container">
+          <div className="os-container" style={{ backgroundImage: `url('${import.meta.env.BASE_URL}wallpaper.png')` }}>
             
             <div className="desktop-workspace">
               <div className="desktop-grid">

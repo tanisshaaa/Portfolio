@@ -715,7 +715,6 @@ footer{padding:2rem 4rem;border-top:1px solid var(--paper3);display:flex;justify
 .os-container {
   border-radius: 0;
   position: relative;
-  background-image: url('/wallpaper.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
