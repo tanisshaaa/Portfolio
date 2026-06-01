@@ -1,4 +1,4 @@
-# Tanisha Sinha — Portfolio
+# Tanisha Sinha | Portfolio
 
 AI/ML Engineer portfolio built with React + TypeScript + Vite.
 
