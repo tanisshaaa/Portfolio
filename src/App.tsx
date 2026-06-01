@@ -539,54 +539,7 @@ function App() {
         </div>
       </div>
 
-      {/* Animated Scroll Hint */}
-      <AnimatePresence>
-        {!isInsideScreen && (
-          <motion.div
-            className="hero-scroll"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            onClick={() => {
-              window.scrollTo({
-                top: window.innerHeight * 1.5,
-                behavior: 'smooth'
-              });
-            }}
-            role="button"
-            aria-label="Scroll to explore portfolio"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                window.scrollTo({
-                  top: window.innerHeight * 1.5,
-                  behavior: 'smooth'
-                });
-              }
-            }}
-          >
-            <span className="scroll-label">Scroll to explore</span>
-            <div className="scroll-arrow-container">
-              <svg 
-                className="bouncing-arrow" 
-                aria-hidden="true" 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="var(--ink3)" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <polyline points="19 12 12 19 5 12"></polyline>
-              </svg>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
 
       {/* Scroll spacer to trigger the 3D camera dive animation */}
       <div style={{ height: '200vh', pointerEvents: 'none' }} />
