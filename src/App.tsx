@@ -141,16 +141,19 @@ const skillsData = [
 
 const projectsData = [
   {
-    title: "Powered Data Analytics Platform for Business Intelligence",
-    date: "Apr 2025",
-    problem: "Business operations lacked real-time visibility into KPIs, predictive demand forecasting, and automated risk mitigation, leading to slow incident response times.",
+    title: "RetailGPT: AI-Powered Business Intelligence Platform",
+    date: "May 2026 – Present",
+    link: "https://retail-gpt.vercel.app/",
+    problem: "Retail businesses drown in sales data but lack tools to query it without SQL knowledge, detect anomalies in real time, or forecast demand before stock-outs hit. RetailGPT bridges that gap.",
     solution: [
-      "Built a real-time BI platform using Streamlit delivering interactive dashboards monitoring 10+ KPIs across operations, sales, and performance.",
-      "Implemented ARIMA-based forecasting achieving 20%+ prediction accuracy improvement for trend and demand forecasting.",
-      "Developed Isolation Forest anomaly detection with 90%+ detection efficiency, enabling faster risk mitigation.",
-      "Integrated automated email alerting (Low/Medium/High severity), reducing incident response time 60%."
+      "Built full-stack BI platform (React, Node.js, Python) enabling natural language querying over 50K-row retail dataset via Text-to-SQL pipeline (OpenAI API) with Supabase/SQLite backend",
+      "Developed XGBoost-based demand forecasting and auto-pilot stock reordering system to predict future trends and prevent stock-outs",
+      "Implemented Isolation Forest anomaly detection for real-time outlier flagging across revenue, profit, and quantity; extended monitoring to payment logs for exploit pattern detection",
+      "Built RAG pipeline (ChromaDB + sentence-transformers) for semantic retrieval over corporate policy documents, enriching chatbot responses with contextual grounding",
+      "Engineered automated chart-type inference generating dynamic Recharts visualizations (line, bar, pie, table) based on SQL result shape and query intent",
+      "Designed fault-tolerant fallback layer: cloud failure degrades gracefully to local SQLite and keyword matching, ensuring zero-downtime reliability"
     ],
-    tech: ["Python", "Streamlit", "ARIMA", "Isolation Forest", "Scikit-learn", "smtplib"]
+    tech: ["Python", "Node.js", "React", "TypeScript", "XGBoost", "OpenAI API", "ChromaDB", "Sentence-Transformers", "Pandas", "NumPy", "Supabase", "SQLite", "Recharts", "Vite"]
   },
   {
     title: "Predictive Maintenance for Industrial Machinery",
@@ -234,7 +237,15 @@ function ProjectsSection() {
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '2rem' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <h3 style={{ color: '#00fff9', fontSize: '1.4rem', fontFamily: 'var(--ff)', margin: 0, lineHeight: 1.3 }}>{proj.title}</h3>
+            <h3 style={{ color: '#00fff9', fontSize: '1.4rem', fontFamily: 'var(--ff)', margin: 0, lineHeight: 1.3 }}>
+              {(proj as any).link ? (
+                <a href={(proj as any).link} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted #00fff9' }}>
+                  {proj.title} ↗
+                </a>
+              ) : (
+                proj.title
+              )}
+            </h3>
             <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{proj.date}</span>
           </div>
           
@@ -622,8 +633,8 @@ function App() {
                   <div className="widget-project-item">
                     <span className="project-dot"></span>
                     <div>
-                      <div className="widget-project-title">AI Data Analytics BI Platform</div>
-                      <div className="widget-project-desc">Interactive Streamlit dashboard & ARIMA demand forecasting.</div>
+                      <div className="widget-project-title">RetailGPT BI Platform</div>
+                      <div className="widget-project-desc">Natural language Text-to-SQL & XGBoost forecasting.</div>
                     </div>
                   </div>
                   <div className="widget-project-item">
