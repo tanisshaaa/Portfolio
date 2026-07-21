@@ -46,9 +46,20 @@ const staggerItem = {
 
 const experiences = [
   {
+    role: "AI/ML Tech Lead",
+    company: "4th Orbit",
+    date: "Jul 2026 – Present",
+    points: [
+      "Managing a team of 7 engineers and leading the end-to-end execution of 4 concurrent AI/ML and product development projects.",
+      "Directing project planning, system architecture design, and sprint cycles while maintaining high engineering quality.",
+      "Orchestrating engineering efforts across cross-functional domains, ensuring seamless integration of ML services with frontends."
+    ],
+    tech: ["Scikit-learn", "Pandas", "NumPy", "Hugging Face", "LangChain", "OpenAI API", "FastAPI", "Node/Express", "PostgreSQL", "Docker"]
+  },
+  {
     role: "AI/ML Engineer",
     company: "4th Orbit",
-    date: "Jul 2025 – Present",
+    date: "Jul 2025 – Jun 2026",
     points: [
       "Built ML/AI core for two internal products — Orbithyre (AI recruitment) and Gaplytiq (job readiness) — owning end-to-end model development, NLP pipelines, and LLM integration.",
       "Developed candidate–job matching engine (scikit-learn) with feature engineering on skills, experience, and role metadata; improved match quality 45%. Screening pipeline processed 1,000+ profiles, cutting manual review time 60%.",
@@ -535,7 +546,7 @@ function App() {
               transition={{ duration: 1.2, delay: 0.2, ease: easeCustom }}
             >
               <span className="hero-designation">AI / ML</span>
-              <span className="hero-designation" style={{ marginTop: 0 }}>Engineer</span>
+              <span className="hero-designation" style={{ marginTop: 0 }}>Tech Lead</span>
             </motion.div>
             
             <motion.div
@@ -610,10 +621,10 @@ function App() {
                     <span className="widget-badge">EXPERIENCE PREVIEW</span>
                     <span className="widget-action-hint">Explore App ↗</span>
                   </div>
-                  <h3 className="widget-title">AI/ML Engineer</h3>
-                  <h4 className="widget-subtitle">4th Orbit • Jul 2025 – Present</h4>
+                  <h3 className="widget-title">AI/ML Tech Lead</h3>
+                  <h4 className="widget-subtitle">4th Orbit • Jul 2026 – Present</h4>
                   <p className="widget-text">
-                    Built recruitment & readiness ML cores, Own end-to-end model development, custom NLP parsers, and Hugging Face/LangChain prompt-chained pipelines.
+                    Promoted to Tech Lead, managing 7 engineers and directing the execution of 4 concurrent AI/ML and product development projects.
                   </p>
                 </div>
 
@@ -836,7 +847,7 @@ function App() {
                 </a>
               </div>
               <h2>About Me</h2>
-              <p>I am an AI/ML Engineer at 4th Orbit, building end-to-end ML pipelines, LLM-powered systems, and NLP workflows. I hold a B.Tech (Hons.) in Computer Science (Data Science) from CSVTU (2025, CGPA 8.14).</p>
+              <p>I am an AI/ML Tech Lead at 4th Orbit, leading a team of 7 engineers and directing the execution of 4 concurrent projects. I hold a B.Tech (Hons.) in Computer Science (Data Science) from CSVTU (2025, CGPA 8.14).</p>
               <p>My expertise spans Machine Learning, LLM Fine-tuning, Prompt Engineering, RAG, and Agentic AI. I build with FastAPI, Docker, n8n, and Power BI, leveraging frameworks like Hugging Face, LangChain, and the OpenAI API.</p>
             </motion.div>
           </motion.div>
