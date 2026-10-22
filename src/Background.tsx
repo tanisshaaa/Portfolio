@@ -1,6 +1,7 @@
-import { useRef, useEffect, useMemo } from 'react';
+import { useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
+import type { ThreeElements } from '@react-three/fiber';
+import { Text, RoundedBox, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 
 // Subtle Far-Background Code Rain
@@ -53,7 +54,243 @@ function BackgroundCodeRain() {
   );
 }
 
+// ---------- Procedural geometry / texture helpers ----------
 
+function roundedRectShape(w: number, h: number, r: number) {
+  const s = new THREE.Shape();
+  const x = -w / 2;
+  const y = -h / 2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y);
+  s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r);
+  s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h);
+  s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r);
+  s.quadraticCurveTo(x, y, x + r, y);
+  return s;
+}
+
+// Flat slab lying in the XZ plane with rounded corners and softly bevelled edges
+type RoundedSlabProps = ThreeElements['mesh'] & {
+  size: [number, number, number]; // width (x), thickness (y), depth (z)
+  radius: number;
+  bevel?: number;
+};
+function RoundedSlab({ size, radius, bevel = 0.004, children, ...props }: RoundedSlabProps) {
+  const [w, h, d] = size;
+  const geometry = useMemo(() => {
+    const g = new THREE.ExtrudeGeometry(
+      roundedRectShape(w - bevel * 2, d - bevel * 2, Math.max(radius - bevel, 0.001)),
+      {
+        depth: Math.max(h - bevel * 2, 0.0001),
+        bevelEnabled: true,
+        bevelThickness: bevel,
+        bevelSize: bevel,
+        bevelSegments: 3,
+        curveSegments: 10,
+      }
+    );
+    g.center();
+    g.rotateX(-Math.PI / 2);
+    return g;
+  }, [w, h, d, radius, bevel]);
+
+  return (
+    <mesh geometry={geometry} {...props}>
+      {children}
+    </mesh>
+  );
+}
+
+// Rounded-rect plane; faces +Z, or +Y when `flat`
+type RoundedPlaneProps = ThreeElements['mesh'] & {
+  size: [number, number];
+  radius: number;
+  flat?: boolean;
+};
+function RoundedPlane({ size, radius, flat = false, children, ...props }: RoundedPlaneProps) {
+  const [w, h] = size;
+  const geometry = useMemo(() => {
+    const g = new THREE.ShapeGeometry(roundedRectShape(w, h, radius), 10);
+    if (flat) g.rotateX(-Math.PI / 2);
+    return g;
+  }, [w, h, radius, flat]);
+
+  return (
+    <mesh geometry={geometry} {...props}>
+      {children}
+    </mesh>
+  );
+}
+
+function seededRandom(seed: number) {
+  let s = seed;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return s / 2147483647;
+  };
+}
+
+function createWoodTexture() {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+  const rand = seededRandom(11);
+
+  ctx.fillStyle = '#c49a6c';
+  ctx.fillRect(0, 0, size, size);
+
+  // Broad tonal bands
+  for (let i = 0; i < 18; i++) {
+    ctx.fillStyle = `rgba(${rand() > 0.5 ? '150, 104, 64' : '222, 186, 142'}, ${0.05 + rand() * 0.08})`;
+    ctx.fillRect(0, rand() * size, size, 10 + rand() * 40);
+  }
+
+  // Fine wavy grain lines
+  for (let i = 0; i < 160; i++) {
+    const y0 = rand() * size;
+    const amp = 1.5 + rand() * 6;
+    const freq = 0.004 + rand() * 0.012;
+    const phase = rand() * Math.PI * 2;
+    ctx.strokeStyle = rand() > 0.35
+      ? `rgba(110, 70, 40, ${0.06 + rand() * 0.16})`
+      : `rgba(240, 206, 166, ${0.05 + rand() * 0.12})`;
+    ctx.lineWidth = 0.5 + rand() * 2.2;
+    ctx.beginPath();
+    for (let x = 0; x <= size; x += 8) {
+      const y = y0 + Math.sin(x * freq + phase) * amp;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function createRuledPaperTexture() {
+  const w = 512;
+  const h = 640;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  ctx.fillStyle = '#fbf8f1';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = 'rgba(120, 155, 205, 0.45)';
+  ctx.lineWidth = 1.5;
+  for (let y = 70; y < h - 10; y += 22) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(220, 110, 110, 0.55)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(64, 0);
+  ctx.lineTo(64, h);
+  ctx.stroke();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function createWallpaperTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d')!;
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, '#f6cdb9');
+  grad.addColorStop(0.45, '#e39a95');
+  grad.addColorStop(1, '#6e3f55');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 512);
+
+  const glow = ctx.createRadialGradient(180, 140, 10, 180, 140, 220);
+  glow.addColorStop(0, 'rgba(255, 240, 225, 0.55)');
+  glow.addColorStop(1, 'rgba(255, 240, 225, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, 256, 512);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// ---------- Props ----------
+
+// Rows of key widths (in key units) and row depth for the laptop keyboard
+const KEY_ROWS: { keys: number[]; depth: number }[] = [
+  { keys: Array(14).fill(1), depth: 0.04 },
+  { keys: [...Array(13).fill(1), 1.5], depth: 0.074 },
+  { keys: [1.5, ...Array(12).fill(1), 1], depth: 0.074 },
+  { keys: [1.75, ...Array(11).fill(1), 1.75], depth: 0.074 },
+  { keys: [2.25, ...Array(10).fill(1), 2.25], depth: 0.074 },
+  { keys: [1, 1, 1, 1.25, 5, 1.25, 1, 1, 1, 1], depth: 0.074 },
+];
+
+function LaptopKeyboard() {
+  const ref = useRef<THREE.InstancedMesh>(null);
+
+  const layout = useMemo(() => {
+    const rowWidth = 1.24;
+    const gap = 0.012;
+    const keys: { x: number; z: number; w: number; d: number }[] = [];
+    const totalDepth = KEY_ROWS.reduce((sum, row) => sum + row.depth, 0) + gap * (KEY_ROWS.length - 1);
+    let z = -totalDepth / 2;
+    KEY_ROWS.forEach((row) => {
+      const units = row.keys.reduce((sum, u) => sum + u, 0);
+      const unit = (rowWidth - gap * (row.keys.length - 1)) / units;
+      let x = -rowWidth / 2;
+      row.keys.forEach((u) => {
+        const w = u * unit;
+        keys.push({ x: x + w / 2, z: z + row.depth / 2, w, d: row.depth });
+        x += w + gap;
+      });
+      z += row.depth + gap;
+    });
+    return keys;
+  }, []);
+
+  useLayoutEffect(() => {
+    const mesh = ref.current;
+    if (!mesh) return;
+    const matrix = new THREE.Matrix4();
+    const quat = new THREE.Quaternion();
+    layout.forEach((k, i) => {
+      matrix.compose(new THREE.Vector3(k.x, 0, k.z), quat, new THREE.Vector3(k.w, 1, k.d));
+      mesh.setMatrixAt(i, matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+  }, [layout]);
+
+  return (
+    <instancedMesh ref={ref} args={[undefined, undefined, layout.length]} castShadow receiveShadow>
+      <boxGeometry args={[1, 0.006, 1]} />
+      <meshStandardMaterial color="#1c1c1f" roughness={0.55} metalness={0.1} />
+    </instancedMesh>
+  );
+}
+
+const ALUMINUM = { color: '#d4d6d9', metalness: 1, roughness: 0.32 } as const;
 
 // Realistic Laptop
 function ClayLaptop({ scrollRef }: { scrollRef: React.RefObject<number> }) {
@@ -88,163 +325,256 @@ function ClayLaptop({ scrollRef }: { scrollRef: React.RefObject<number> }) {
 
   return (
     <group ref={groupRef} position={[-1.4, 0.45, 0.4]} rotation={[0, 0.4, 0]}>
-      {/* Base shadow receiver slab under laptop */}
-      <mesh position={[0, -0.02, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.52, 0.02, 1.12]} />
-        <meshStandardMaterial color="#c19a6b" roughness={0.9} /> {/* shadow matching desk */}
-      </mesh>
+      {/* Offset so the rubber feet rest on the laptop pedestal */}
+      <group position={[0, -0.06, 0]}>
+        {/* Unibody aluminum base */}
+        <RoundedSlab size={[1.5, 0.045, 1.05]} radius={0.06} bevel={0.008} castShadow receiveShadow>
+          <meshStandardMaterial {...ALUMINUM} />
+        </RoundedSlab>
 
-      {/* Base */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.5, 0.06, 1.1]} />
-        <meshStandardMaterial color="#c0c4c8" roughness={0.3} metalness={0.7} /> {/* Silver Aluminum */}
-      </mesh>
-      
-      {/* Keyboard well (darker recessed area, placed centrally-back) */}
-      <mesh position={[0, 0.031, -0.1]}>
-        <boxGeometry args={[1.3, 0.005, 0.55]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.8} /> {/* Matte Black Keyboard Area */}
-      </mesh>
+        {/* Rubber feet */}
+        {[[-0.62, -0.42], [0.62, -0.42], [-0.62, 0.42], [0.62, 0.42]].map(([x, z], i) => (
+          <mesh key={i} position={[x, -0.0265, z]}>
+            <cylinderGeometry args={[0.03, 0.03, 0.008, 16]} />
+            <meshStandardMaterial color="#2a2a2c" roughness={0.9} />
+          </mesh>
+        ))}
 
-      {/* Trackpad area (placed in the front) */}
-      <mesh position={[0, 0.031, 0.35]}>
-        <boxGeometry args={[0.5, 0.005, 0.25]} />
-        <meshStandardMaterial color="#b0b4b8" roughness={0.4} metalness={0.5} /> {/* Darker silver trackpad */}
-      </mesh>
+        {/* Keyboard well + keys */}
+        <RoundedPlane flat size={[1.3, 0.52]} radius={0.02} position={[0, 0.0227, -0.14]} receiveShadow>
+          <meshStandardMaterial color="#121214" roughness={0.75} />
+        </RoundedPlane>
+        <group position={[0, 0.0257, -0.14]}>
+          <LaptopKeyboard />
+        </group>
 
-      {/* Screen Hinge removed as requested */}
+        {/* Speaker grilles */}
+        {[-0.7, 0.7].map((x) => (
+          <RoundedPlane key={x} flat size={[0.04, 0.5]} radius={0.01} position={[x, 0.0227, -0.14]}>
+            <meshStandardMaterial color="#6d7074" roughness={0.85} metalness={0.6} />
+          </RoundedPlane>
+        ))}
 
-      {/* Screen panel (hinged at the back, angled away from the user) */}
-      <group position={[0, 0.04, -0.52]} rotation={[-0.2, 0, 0]}>
-        {/* Lid cover */}
-        <mesh position={[0, 0.5, -0.02]} castShadow>
-          <boxGeometry args={[1.5, 1.0, 0.05]} />
-          <meshStandardMaterial color="#c0c4c8" roughness={0.3} metalness={0.7} /> {/* Silver Aluminum back */}
+        {/* Glass trackpad */}
+        <RoundedSlab size={[0.62, 0.003, 0.34]} radius={0.025} bevel={0.001} position={[0, 0.0225, 0.31]} receiveShadow>
+          <meshPhysicalMaterial color="#c6c9cd" metalness={0.85} roughness={0.42} clearcoat={0.4} clearcoatRoughness={0.3} />
+        </RoundedSlab>
+
+        {/* Display hinge */}
+        <mesh position={[0, 0.024, -0.51]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.018, 0.018, 1.2, 24]} />
+          <meshStandardMaterial color="#2c2d30" metalness={0.7} roughness={0.4} />
         </mesh>
-        {/* Inner screen frame */}
-        <mesh position={[0, 0.5, 0.01]}>
-          <boxGeometry args={[1.38, 0.88, 0.01]} />
-          <meshStandardMaterial color="#111111" roughness={0.9} /> {/* Matte Black Bezel */}
-        </mesh>
-        {/* Screen Face */}
-        <mesh position={[0, 0.5, 0.016]}>
-          <boxGeometry args={[1.3, 0.8, 0.005]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.1} metalness={0.8} /> {/* Glossy dark screen off */}
-        </mesh>
+
+        {/* Display (hinged at the back, angled away from the user) */}
+        <group position={[0, 0.04, -0.52]} rotation={[-0.2, 0, 0]}>
+          {/* Thin aluminum lid */}
+          <group position={[0, 0.5, -0.008]} rotation={[Math.PI / 2, 0, 0]}>
+            <RoundedSlab size={[1.5, 0.014, 1.0]} radius={0.06} bevel={0.005} castShadow>
+              <meshStandardMaterial {...ALUMINUM} />
+            </RoundedSlab>
+          </group>
+
+          {/* Polished logo on the back of the lid */}
+          <mesh position={[0, 0.52, -0.0156]} rotation={[0, Math.PI, 0]}>
+            <circleGeometry args={[0.06, 32]} />
+            <meshStandardMaterial color="#eef0f2" metalness={1} roughness={0.08} />
+          </mesh>
+
+          {/* Glossy black bezel */}
+          <RoundedPlane size={[1.47, 0.97]} radius={0.05} position={[0, 0.5, 0.0002]}>
+            <meshPhysicalMaterial color="#0b0b0d" roughness={0.2} clearcoat={1} clearcoatRoughness={0.05} />
+          </RoundedPlane>
+
+          {/* Screen (off, faint warm glow) */}
+          <RoundedPlane size={[1.4, 0.88]} radius={0.012} position={[0, 0.51, 0.0008]}>
+            <meshPhysicalMaterial
+              color="#040506"
+              roughness={0.05}
+              clearcoat={1}
+              clearcoatRoughness={0.02}
+              emissive="#2a1820"
+              emissiveIntensity={0.15}
+            />
+          </RoundedPlane>
+
+          {/* Webcam */}
+          <mesh position={[0, 0.968, 0.001]}>
+            <circleGeometry args={[0.007, 16]} />
+            <meshStandardMaterial color="#1c2230" roughness={0.1} metalness={0.5} />
+          </mesh>
+        </group>
       </group>
     </group>
   );
 }
 
-// High-Fidelity Ergonomic Mouse -> Realistic Mouse
+// Ergonomic mouse body profile, t: 0 = front tip, 1 = back
+const MOUSE_HALF_LENGTH = 0.15;
+function mouseProfile(t: number) {
+  return {
+    halfWidth: 0.05 + 0.014 * Math.sin((Math.min(t * 1.4, 1) * Math.PI) / 2),
+    height: 0.032 + 0.04 * Math.sin((Math.min(t * 1.3, 1) * Math.PI) / 2),
+  };
+}
+function mouseTopY(z: number) {
+  const zn = z / MOUSE_HALF_LENGTH;
+  return mouseProfile((zn + 1) / 2).height * Math.sqrt(Math.max(0, 1 - zn * zn));
+}
+
+// Realistic Mouse
 function ClayMouse() {
+  const shellGeometry = useMemo(() => {
+    const g = new THREE.SphereGeometry(1, 48, 32);
+    const pos = g.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const y = pos.getY(i);
+      const z = pos.getZ(i);
+      const { halfWidth, height } = mouseProfile((z + 1) / 2);
+      pos.setXYZ(i, x * halfWidth, y > 0 ? y * height : y * 0.012, z * MOUSE_HALF_LENGTH);
+    }
+    g.computeVertexNormals();
+    return g;
+  }, []);
+
+  const splitGeometry = useMemo(() => {
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i <= 12; i++) {
+      const z = -MOUSE_HALF_LENGTH * 0.97 + (i / 12) * (MOUSE_HALF_LENGTH * 0.97 - 0.01);
+      points.push(new THREE.Vector3(0, mouseTopY(z) + 0.0004, z));
+    }
+    return new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 24, 0.0016, 6);
+  }, []);
+
+  const wheelZ = -0.07;
+  const wheelY = mouseTopY(wheelZ);
+
   return (
     <group position={[-0.2, 0.25, 0.7]} rotation={[0, -0.3, 0]}>
-      {/* Mouse Base shadow-plate */}
-      <mesh position={[0, 0.01, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.22, 0.02, 0.38]} />
-        <meshStandardMaterial color="#c19a6b" roughness={0.9} />
-      </mesh>
-
-      {/* Main ergonomic dome shell */}
-      <group position={[0, 0.06, 0]}>
-        {/* Palm Rest (rear hump) */}
-        <mesh position={[0, 0.02, 0.08]} scale={[1, 0.75, 1]} castShadow>
-          <sphereGeometry args={[0.13, 32, 16]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.7} /> {/* Matte Black Plastic */}
-        </mesh>
-        
-        {/* Thumb Rest Wing (left side) */}
-        <mesh position={[-0.1, 0.01, 0.05]} rotation={[0.1, 0, 0.25]} scale={[0.6, 0.3, 1]} castShadow>
-          <sphereGeometry args={[0.08, 16, 16]} />
-          <meshStandardMaterial color="#222222" roughness={0.8} /> {/* Slightly different dark plastic */}
+      <group position={[0, 0.012, 0]}>
+        {/* Sculpted shell (satin plastic) */}
+        <mesh geometry={shellGeometry} castShadow receiveShadow>
+          <meshPhysicalMaterial color="#2a2a2e" roughness={0.5} clearcoat={0.25} clearcoatRoughness={0.5} />
         </mesh>
 
-        {/* Left click button */}
-        <mesh position={[-0.052, 0.04, -0.08]} rotation={[-0.15, -0.05, 0]} castShadow>
-          <boxGeometry args={[0.09, 0.04, 0.18]} />
-          <meshStandardMaterial color="#222222" roughness={0.65} />
-        </mesh>
-
-        {/* Right click button */}
-        <mesh position={[0.052, 0.04, -0.08]} rotation={[-0.15, 0.05, 0]} castShadow>
-          <boxGeometry args={[0.09, 0.04, 0.18]} />
-          <meshStandardMaterial color="#222222" roughness={0.65} />
-        </mesh>
-
-        {/* Button Split Line (thin vertical slice) */}
-        <mesh position={[0, 0.062, -0.08]}>
-          <boxGeometry args={[0.006, 0.01, 0.18]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+        {/* Left / right button split */}
+        <mesh geometry={splitGeometry}>
+          <meshStandardMaterial color="#0c0c0e" roughness={0.9} />
         </mesh>
 
         {/* Scroll wheel slot */}
-        <mesh position={[0, 0.05, -0.09]}>
-          <boxGeometry args={[0.025, 0.03, 0.06]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.9} />
+        <mesh position={[0, wheelY - 0.003, wheelZ]}>
+          <boxGeometry args={[0.018, 0.01, 0.036]} />
+          <meshStandardMaterial color="#0a0a0b" roughness={0.9} />
         </mesh>
 
-        {/* Scroll Wheel */}
-        <mesh position={[0, 0.068, -0.09]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <cylinderGeometry args={[0.022, 0.022, 0.018, 16]} />
-          <meshStandardMaterial color="#777777" roughness={0.3} metalness={0.8} /> {/* Metallic scroll wheel */}
+        {/* Rubberized scroll wheel */}
+        <mesh position={[0, wheelY - 0.002, wheelZ]} rotation={[0, 0, Math.PI / 2]} castShadow>
+          <cylinderGeometry args={[0.012, 0.012, 0.01, 20]} />
+          <meshStandardMaterial color="#45454a" roughness={0.6} metalness={0.3} />
         </mesh>
       </group>
     </group>
   );
 }
 
-// Realistic Smartphones
+// Realistic Smartphone
 function ClayPhones() {
+  const wallpaper = useMemo(() => createWallpaperTexture(), []);
+  const top = 0.012;
+
   return (
     <group>
-      {/* Primary Phone */}
-      <group position={[-1.1, 0.285, 2.2]} rotation={[0, 0.25, 0]}>
-        {/* Outer Phone Case / Glass Back */}
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[0.34, 0.035, 0.68]} />
-          <meshStandardMaterial color="#0a0a0a" roughness={0.1} metalness={0.9} /> {/* Glossy glass back */}
+      <group position={[-1.1, 0.262, 2.2]} rotation={[0, 0.25, 0]}>
+        {/* Titanium frame + back */}
+        <RoundedSlab size={[0.33, 0.024, 0.68]} radius={0.05} bevel={0.006} castShadow receiveShadow>
+          <meshStandardMaterial color="#8f8b86" metalness={1} roughness={0.3} />
+        </RoundedSlab>
+
+        {/* Side buttons */}
+        <mesh position={[-0.166, 0, -0.17]}>
+          <boxGeometry args={[0.006, 0.01, 0.07]} />
+          <meshStandardMaterial color="#8f8b86" metalness={1} roughness={0.3} />
         </mesh>
-        
-        {/* Phone screen bezel (Metallic Frame) */}
-        <mesh position={[0, 0.018, 0]}>
-          <boxGeometry args={[0.31, 0.005, 0.65]} />
-          <meshStandardMaterial color="#a0a0a0" roughness={0.2} metalness={0.8} /> {/* Aluminum Edge */}
-        </mesh>
-        
-        {/* Phone screen face */}
-        <mesh position={[0, 0.021, 0]} castShadow>
-          <boxGeometry args={[0.29, 0.005, 0.63]} />
-          <meshStandardMaterial color="#050505" roughness={0.05} metalness={0.95} /> {/* Dark glassy screen */}
+        <mesh position={[0.166, 0, -0.12]}>
+          <boxGeometry args={[0.006, 0.01, 0.1]} />
+          <meshStandardMaterial color="#8f8b86" metalness={1} roughness={0.3} />
         </mesh>
 
-        {/* Lock Screen UI widgets */}
-        {/* Time widget circle */}
-        <mesh position={[0, 0.024, -0.17]}>
-          <cylinderGeometry args={[0.032, 0.032, 0.002, 16]} />
-          <meshBasicMaterial color="#ffffff" opacity={0.8} transparent />
-        </mesh>
-        {/* Notification pill 1 */}
-        <mesh position={[0, 0.024, -0.04]}>
-          <boxGeometry args={[0.22, 0.002, 0.06]} />
-          <meshBasicMaterial color="#e0e0e0" opacity={0.9} transparent />
-        </mesh>
-        {/* Notification pill 2 */}
-        <mesh position={[0, 0.024, 0.05]}>
-          <boxGeometry args={[0.22, 0.002, 0.06]} />
-          <meshBasicMaterial color="#d0d0d0" opacity={0.9} transparent />
-        </mesh>
-        
-        {/* Front ear speaker grill */}
-        <mesh position={[0, 0.024, -0.27]}>
-          <boxGeometry args={[0.07, 0.002, 0.01]} />
-          <meshStandardMaterial color="#111111" roughness={0.9} />
-        </mesh>
-        {/* Front camera lens */}
-        <mesh position={[-0.06, 0.024, -0.27]}>
-          <sphereGeometry args={[0.006, 8, 8]} />
-          <meshStandardMaterial color="#000000" roughness={0.1} metalness={1.0} />
-        </mesh>
+        {/* Front glass */}
+        <RoundedPlane flat size={[0.322, 0.672]} radius={0.046} position={[0, top + 0.0001, 0]}>
+          <meshPhysicalMaterial color="#050506" roughness={0.05} clearcoat={1} clearcoatRoughness={0.02} />
+        </RoundedPlane>
+
+        {/* Lock screen wallpaper */}
+        <RoundedPlane flat size={[0.304, 0.654]} radius={0.04} position={[0, top + 0.0004, 0]}>
+          <meshStandardMaterial
+            map={wallpaper}
+            emissiveMap={wallpaper}
+            emissive="#ffffff"
+            emissiveIntensity={0.55}
+            roughness={0.15}
+          />
+        </RoundedPlane>
+
+        {/* Dynamic island */}
+        <RoundedPlane flat size={[0.075, 0.022]} radius={0.011} position={[0, top + 0.0008, -0.3]}>
+          <meshBasicMaterial color="#000000" />
+        </RoundedPlane>
+
+        {/* Date + clock */}
+        <Text
+          position={[0, top + 0.0008, -0.245]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.016}
+          color="#fff6f0"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Thursday, October 22
+        </Text>
+        <Text
+          position={[0, top + 0.0008, -0.19]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          fontSize={0.075}
+          color="#fff6f0"
+          anchorX="center"
+          anchorY="middle"
+        >
+          9:41
+        </Text>
+
+        {/* Notification cards */}
+        {[-0.05, 0.035].map((z, i) => (
+          <group key={z} position={[0, top + 0.0008, z]}>
+            <RoundedPlane flat size={[0.28, 0.07]} radius={0.018}>
+              <meshBasicMaterial color="#ffffff" transparent opacity={0.5} depthWrite={false} />
+            </RoundedPlane>
+            <RoundedPlane flat size={[0.04, 0.04]} radius={0.01} position={[-0.105, 0.0002, 0]}>
+              <meshBasicMaterial color={i === 0 ? '#d97757' : '#4f8df5'} />
+            </RoundedPlane>
+            <RoundedPlane flat size={[0.14, 0.009]} radius={0.004} position={[0.005, 0.0002, -0.01]}>
+              <meshBasicMaterial color="#3a2a30" transparent opacity={0.7} depthWrite={false} />
+            </RoundedPlane>
+            <RoundedPlane flat size={[0.18, 0.008]} radius={0.004} position={[0.025, 0.0002, 0.011]}>
+              <meshBasicMaterial color="#3a2a30" transparent opacity={0.4} depthWrite={false} />
+            </RoundedPlane>
+          </group>
+        ))}
+
+        {/* Flashlight / camera shortcuts */}
+        {[-0.105, 0.105].map((x) => (
+          <mesh key={x} position={[x, top + 0.0008, 0.26]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.022, 24]} />
+            <meshBasicMaterial color="#2a1a22" transparent opacity={0.45} depthWrite={false} />
+          </mesh>
+        ))}
+
+        {/* Home indicator */}
+        <RoundedPlane flat size={[0.11, 0.006]} radius={0.003} position={[0, top + 0.0008, 0.312]}>
+          <meshBasicMaterial color="#ffffff" transparent opacity={0.85} depthWrite={false} />
+        </RoundedPlane>
       </group>
     </group>
   );
@@ -252,30 +582,35 @@ function ClayPhones() {
 
 // Realistic Stainless Steel Tumbler
 function ClayTumbler() {
+  const bodyGeometry = useMemo(() => {
+    const profile = [
+      [0, 0], [0.135, 0], [0.148, 0.008], [0.152, 0.03], [0.155, 0.12],
+      [0.165, 0.28], [0.176, 0.42], [0.18, 0.445], [0.183, 0.452], [0.183, 0.46],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    return new THREE.LatheGeometry(profile, 64);
+  }, []);
+
   return (
     <group position={[-2.2, 0.25, 1.2]} rotation={[0, 0.5, 0]}>
-      {/* Base plate */}
-      <mesh position={[0, 0.01, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.16, 0.16, 0.02, 32]} />
-        <meshStandardMaterial color="#888888" roughness={0.4} metalness={0.6} />
-      </mesh>
-      
-      {/* Main body (tapered stainless steel) */}
-      <mesh position={[0, 0.25, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.18, 0.15, 0.46, 32]} />
-        <meshStandardMaterial color="#888888" roughness={0.3} metalness={0.7} /> {/* Stainless Steel */}
+      {/* Brushed stainless body */}
+      <mesh geometry={bodyGeometry} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#c9ccd0" metalness={1} roughness={0.26} clearcoat={0.2} clearcoatRoughness={0.3} />
       </mesh>
       
       {/* Lid (Black Plastic) */}
-      <mesh position={[0, 0.49, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.19, 0.19, 0.04, 32]} />
-        <meshStandardMaterial color="#111111" roughness={0.8} />
+      <mesh position={[0, 0.48, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[0.178, 0.186, 0.04, 48]} />
+        <meshPhysicalMaterial color="#151517" roughness={0.45} clearcoat={0.3} clearcoatRoughness={0.4} />
+      </mesh>
+      <mesh position={[0, 0.502, 0]}>
+        <cylinderGeometry args={[0.04, 0.045, 0.006, 32]} />
+        <meshStandardMaterial color="#2a2a2d" roughness={0.6} />
       </mesh>
       
-      {/* Straw (Clear Acrylic) */}
+      {/* Straw (Tinted Acrylic) */}
       <mesh position={[0, 0.65, 0]} rotation={[0.1, 0, 0.1]} castShadow>
         <cylinderGeometry args={[0.015, 0.015, 0.35, 16]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.9} roughness={0.1} transparent opacity={0.6} />
+        <meshPhysicalMaterial color="#f7d9cf" transmission={0.9} roughness={0.08} thickness={0.03} ior={1.49} />
       </mesh>
     </group>
   );
@@ -285,41 +620,58 @@ function ClayTumbler() {
 function ClayPerfume() {
   return (
     <group position={[1.45, 0.25, 0.9]} rotation={[0, -0.4, 0]}>
-      {/* Base shadow plate - removed for transparent glass look */}
-      
-      {/* Glass body */}
-      <mesh position={[0, 0.18, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.2, 0.32, 0.1]} />
-        <meshPhysicalMaterial color="#ffffff" transmission={0.95} roughness={0.05} metalness={0.1} thickness={0.1} ior={1.5} transparent />
-      </mesh>
+      {/* Glass body with rosy liquid tint */}
+      <RoundedBox args={[0.2, 0.32, 0.1]} radius={0.018} smoothness={4} position={[0, 0.16, 0]} castShadow>
+        <meshPhysicalMaterial
+          color="#fff6f3"
+          transmission={1}
+          roughness={0.04}
+          thickness={0.12}
+          ior={1.5}
+          attenuationColor="#f0a493"
+          attenuationDistance={0.35}
+          clearcoat={1}
+          clearcoatRoughness={0.03}
+        />
+      </RoundedBox>
       
       {/* Label */}
-      <group position={[0, 0.18, 0.052]}>
+      <group position={[0, 0.16, 0.0505]}>
         <mesh>
-          <boxGeometry args={[0.12, 0.12, 0.005]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.9} />
+          <planeGeometry args={[0.12, 0.11]} />
+          <meshStandardMaterial color="#f6efe6" roughness={0.85} />
         </mesh>
         <Text
-          position={[0, 0, 0.003]}
+          position={[0, 0.008, 0.001]}
           fontSize={0.018}
-          color="#111111"
+          color="#8a6a3a"
           anchorX="center"
           anchorY="middle"
         >
-          fragnance
+          fragrance
+        </Text>
+        <Text
+          position={[0, -0.018, 0.001]}
+          fontSize={0.008}
+          letterSpacing={0.2}
+          color="#8a6a3a"
+          anchorX="center"
+          anchorY="middle"
+        >
+          EAU DE PARFUM
         </Text>
       </group>
       
-      {/* Neck (Gold) */}
-      <mesh position={[0, 0.36, 0]} castShadow>
-        <cylinderGeometry args={[0.03, 0.03, 0.04, 16]} />
-        <meshStandardMaterial color="#d4af37" roughness={0.15} metalness={1.0} />
+      {/* Neck collar (Gold) */}
+      <mesh position={[0, 0.333, 0]} castShadow>
+        <cylinderGeometry args={[0.028, 0.032, 0.026, 24]} />
+        <meshStandardMaterial color="#d6b17a" roughness={0.18} metalness={1.0} />
       </mesh>
       
       {/* Cap (Gold) */}
-      <mesh position={[0, 0.43, 0]} castShadow>
-        <cylinderGeometry args={[0.06, 0.06, 0.1, 32]} />
-        <meshStandardMaterial color="#d4af37" roughness={0.2} metalness={0.9} />
+      <mesh position={[0, 0.39, 0]} castShadow>
+        <cylinderGeometry args={[0.055, 0.055, 0.09, 48]} />
+        <meshPhysicalMaterial color="#d6b17a" roughness={0.16} metalness={1} clearcoat={0.5} clearcoatRoughness={0.1} />
       </mesh>
     </group>
   );
@@ -327,26 +679,41 @@ function ClayPerfume() {
 
 // Realistic Notepad
 function ClayNotepad() {
+  const paper = useMemo(() => createRuledPaperTexture(), []);
+  const ringXs = useMemo(() => Array.from({ length: 16 }, (_, i) => -0.42 + (i * 0.84) / 15), []);
+
   return (
-    <group position={[0.45, 0.28, 1.4]} rotation={[0, -0.4, 0]}>
-      {/* Notepad backing board (Cardboard/Greyboard) */}
+    <group position={[0.45, 0.26, 1.4]} rotation={[0, -0.4, 0]}>
+      {/* Greyboard backing */}
       <mesh castShadow receiveShadow>
-        <boxGeometry args={[1.0, 0.04, 1.3]} />
-        <meshStandardMaterial color="#555555" roughness={0.9} />
+        <boxGeometry args={[1.0, 0.02, 1.3]} />
+        <meshStandardMaterial color="#8b8178" roughness={0.95} />
       </mesh>
       
-      {/* Paper sheets (Bright White) */}
-      <mesh position={[0, 0.025, 0.02]} castShadow receiveShadow>
-        <boxGeometry args={[0.9, 0.02, 1.15]} />
-        <meshStandardMaterial color="#ffffff" roughness={1.0} />
+      {/* Paper stack */}
+      <mesh position={[0, 0.025, -0.01]} castShadow receiveShadow>
+        <boxGeometry args={[0.92, 0.03, 1.22]} />
+        <meshStandardMaterial color="#f3eee4" roughness={1.0} />
       </mesh>
 
-      {/* Spiral ring bindings on top edge (Metallic Wire) */}
-      {[-0.35, -0.15, 0.05, 0.25, 0.45].map((xOffset, i) => (
-        <mesh key={i} position={[xOffset, 0.04, -0.58]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-          <torusGeometry args={[0.06, 0.018, 8, 24, Math.PI * 1.5]} />
-          <meshStandardMaterial color="#888888" roughness={0.3} metalness={0.8} />
-        </mesh>
+      {/* Ruled top sheet */}
+      <mesh position={[0, 0.0405, -0.01]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[0.92, 1.22]} />
+        <meshStandardMaterial map={paper} roughness={0.95} />
+      </mesh>
+
+      {/* Punched holes + spiral wire */}
+      {ringXs.map((x) => (
+        <group key={x} position={[x, 0, 0]}>
+          <mesh position={[0, 0.041, -0.59]} rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.009, 12]} />
+            <meshBasicMaterial color="#3a3430" />
+          </mesh>
+          <mesh position={[0, 0.02, -0.625]} rotation={[0, Math.PI / 2, 0]} castShadow>
+            <torusGeometry args={[0.045, 0.0045, 6, 20]} />
+            <meshStandardMaterial color="#b8bbbf" roughness={0.25} metalness={1} />
+          </mesh>
+        </group>
       ))}
     </group>
   );
@@ -354,103 +721,113 @@ function ClayNotepad() {
 
 // Realistic Penstand with 6 Rich Writing Tools
 function ClayPenstand() {
+  const cupGeometry = useMemo(() => {
+    const profile = [
+      [0, -0.2], [0.25, -0.2], [0.26, -0.19], [0.26, 0.35], [0.255, 0.36],
+      [0.235, 0.36], [0.23, 0.35], [0.23, -0.15], [0, -0.15],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    return new THREE.LatheGeometry(profile, 48);
+  }, []);
+
   return (
     <group position={[0.92, 0.45, 0.45]} rotation={[0, -0.2, 0]}>
-      {/* Main penholder cup container (Matte Black Ceramic) */}
-      <mesh receiveShadow>
-        <cylinderGeometry args={[0.26, 0.26, 0.72, 32]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.9} />
+      {/* Glazed ceramic cup with real wall thickness */}
+      <mesh geometry={cupGeometry} castShadow receiveShadow>
+        <meshPhysicalMaterial color="#222023" roughness={0.55} clearcoat={0.4} clearcoatRoughness={0.35} side={THREE.DoubleSide} />
       </mesh>
       
-      {/* Inner depth shadow (rim cap) */}
-      <mesh position={[0, 0.355, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.22, 0.25, 32]} />
-        <meshStandardMaterial color="#050505" roughness={1.0} />
-      </mesh>
-      
-      {/* Pen 1: Sleek Silver/White metallic ballpoint (angled front-left) */}
+      {/* Pen 1: Sleek white metallic ballpoint (angled front-left) */}
       <group position={[-0.09, 0.42, 0.06]} rotation={[0.38, -0.22, 0.15]}>
-        <mesh>
-          <cylinderGeometry args={[0.022, 0.022, 0.82, 8]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.2} metalness={0.5} />
+        <mesh castShadow>
+          <cylinderGeometry args={[0.022, 0.022, 0.82, 16]} />
+          <meshPhysicalMaterial color="#f0f0f0" roughness={0.25} metalness={0.3} clearcoat={0.8} />
         </mesh>
-        {/* Pen clip details (Chrome) */}
+        {/* Pen clip (Chrome) */}
         <mesh position={[0, 0.2, 0.022]}>
           <boxGeometry args={[0.008, 0.15, 0.012]} />
           <meshStandardMaterial color="#cccccc" roughness={0.1} metalness={1.0} />
         </mesh>
         <mesh position={[0, 0.44, 0]}>
-          <coneGeometry args={[0.024, 0.06, 8]} />
-          <meshStandardMaterial color="#111111" roughness={0.8} />
+          <coneGeometry args={[0.022, 0.06, 16]} />
+          <meshStandardMaterial color="#c8c8cc" roughness={0.15} metalness={1} />
         </mesh>
       </group>
 
-      {/* Pencil 2: Classic Yellow Pencil with pink eraser (angled back-right) */}
+      {/* Pencil 2: Classic hexagonal yellow pencil (angled back-right) */}
       <group position={[0.09, 0.4, -0.06]} rotation={[-0.22, 0.38, -0.28]}>
-        <mesh>
-          <cylinderGeometry args={[0.02, 0.02, 0.78, 8]} />
-          <meshStandardMaterial color="#ffcc00" roughness={0.7} />
+        <mesh castShadow>
+          <cylinderGeometry args={[0.02, 0.02, 0.78, 6]} />
+          <meshPhysicalMaterial color="#f2b705" roughness={0.45} clearcoat={0.5} />
         </mesh>
-        {/* Eraser band (metal) and tip (pink) */}
+        {/* Ferrule (metal) */}
         <mesh position={[0, -0.38, 0]}>
-          <cylinderGeometry args={[0.021, 0.021, 0.05, 8]} />
-          <meshStandardMaterial color="#aaaaaa" roughness={0.3} metalness={0.8} />
+          <cylinderGeometry args={[0.021, 0.021, 0.05, 16]} />
+          <meshStandardMaterial color="#b0b0b0" roughness={0.3} metalness={1} />
         </mesh>
+        {/* Sharpened wood tip + graphite point */}
         <mesh position={[0, 0.41, 0]}>
-          <coneGeometry args={[0.022, 0.06, 8]} />
-          <meshStandardMaterial color="#ffb6c1" roughness={0.9} /> {/* Pink Eraser at top? Wait, eraser is usually top. The cone is the sharpened tip! */}
+          <coneGeometry args={[0.02, 0.05, 6]} />
+          <meshStandardMaterial color="#e3c497" roughness={0.9} />
         </mesh>
-        {/* Fix: Cone at 0.41 is the sharpened tip, the cylinder at -0.38 is the eraser end! */}
+        <mesh position={[0, 0.44, 0]}>
+          <coneGeometry args={[0.006, 0.012, 8]} />
+          <meshStandardMaterial color="#2b2b2b" roughness={0.4} metalness={0.4} />
+        </mesh>
       </group>
 
-      {/* Pencil 3: Blue wood pencil (angled back-left) */}
+      {/* Pencil 3: Blue hexagonal pencil (angled back-left) */}
       <group position={[-0.06, 0.42, -0.09]} rotation={[-0.32, -0.32, -0.12]}>
-        <mesh>
-          <cylinderGeometry args={[0.018, 0.018, 0.84, 8]} />
-          <meshStandardMaterial color="#0066cc" roughness={0.8} />
+        <mesh castShadow>
+          <cylinderGeometry args={[0.018, 0.018, 0.84, 6]} />
+          <meshPhysicalMaterial color="#1f5fb8" roughness={0.45} clearcoat={0.5} />
         </mesh>
-        <mesh position={[0, 0.45, 0]}>
-          <coneGeometry args={[0.02, 0.06, 8]} />
-          <meshStandardMaterial color="#d2b48c" roughness={0.9} /> {/* Exposed wood tip */}
+        <mesh position={[0, 0.445, 0]}>
+          <coneGeometry args={[0.018, 0.05, 6]} />
+          <meshStandardMaterial color="#e3c497" roughness={0.9} />
+        </mesh>
+        <mesh position={[0, 0.474, 0]}>
+          <coneGeometry args={[0.005, 0.01, 8]} />
+          <meshStandardMaterial color="#2b2b2b" roughness={0.4} metalness={0.4} />
         </mesh>
       </group>
 
-      {/* Pen 4: Yellow plastic highlighter (angled front-right) */}
+      {/* Pen 4: Yellow highlighter (angled front-right) */}
       <group position={[0.08, 0.36, 0.09]} rotation={[0.18, 0.22, 0.32]}>
-        <mesh>
-          <cylinderGeometry args={[0.032, 0.032, 0.7, 12]} />
-          <meshStandardMaterial color="#ffff00" roughness={0.4} />
+        <mesh castShadow>
+          <cylinderGeometry args={[0.032, 0.032, 0.7, 20]} />
+          <meshPhysicalMaterial color="#f5e23a" roughness={0.35} clearcoat={0.3} />
         </mesh>
-        {/* Marker cap ring (Black) */}
+        {/* Marker cap (Black) */}
         <mesh position={[0, 0.22, 0]}>
-          <cylinderGeometry args={[0.035, 0.035, 0.16, 12]} />
-          <meshStandardMaterial color="#111111" roughness={0.5} />
+          <cylinderGeometry args={[0.035, 0.035, 0.16, 20]} />
+          <meshPhysicalMaterial color="#141414" roughness={0.4} clearcoat={0.3} />
         </mesh>
       </group>
 
       {/* Ruler 5: Flat wooden ruler (angled straight back) */}
       <group position={[0.02, 0.46, -0.08]} rotation={[-0.15, 0.1, -0.05]}>
-        <mesh>
+        <mesh castShadow>
           <boxGeometry args={[0.07, 0.95, 0.012]} />
-          <meshStandardMaterial color="#d2b48c" roughness={0.9} /> {/* Natural Wood */}
+          <meshStandardMaterial color="#d6b98f" roughness={0.75} />
         </mesh>
-        {/* Ruler ticks (static to be ultra-robust) */}
-        <mesh position={[-0.02, 0.1, 0.007]}><boxGeometry args={[0.018, 0.002, 0.002]} /><meshBasicMaterial color="#111111" /></mesh>
-        <mesh position={[-0.02, 0.18, 0.007]}><boxGeometry args={[0.018, 0.002, 0.002]} /><meshBasicMaterial color="#111111" /></mesh>
-        <mesh position={[-0.02, 0.26, 0.007]}><boxGeometry args={[0.018, 0.002, 0.002]} /><meshBasicMaterial color="#111111" /></mesh>
-        <mesh position={[-0.02, 0.34, 0.007]}><boxGeometry args={[0.018, 0.002, 0.002]} /><meshBasicMaterial color="#111111" /></mesh>
-        <mesh position={[-0.02, 0.42, 0.007]}><boxGeometry args={[0.018, 0.002, 0.002]} /><meshBasicMaterial color="#111111" /></mesh>
+        {/* Ruler ticks */}
+        {Array.from({ length: 9 }, (_, i) => (
+          <mesh key={i} position={[i % 2 === 0 ? -0.02 : -0.024, 0.1 + i * 0.04, 0.007]}>
+            <boxGeometry args={[i % 2 === 0 ? 0.018 : 0.01, 0.002, 0.002]} />
+            <meshBasicMaterial color="#2a2018" />
+          </mesh>
+        ))}
       </group>
 
       {/* Pen 6: Stylus/digital pen (Apple Pencil style) */}
       <group position={[0.01, 0.41, 0.08]} rotation={[0.28, 0.05, 0.02]}>
-        <mesh>
-          <cylinderGeometry args={[0.016, 0.016, 0.78, 8]} />
-          <meshStandardMaterial color="#ffffff" roughness={0.1} />
+        <mesh castShadow>
+          <cylinderGeometry args={[0.016, 0.016, 0.78, 16]} />
+          <meshPhysicalMaterial color="#fafafa" roughness={0.3} clearcoat={0.6} clearcoatRoughness={0.3} />
         </mesh>
         <mesh position={[0, 0.41, 0]}>
-          <coneGeometry args={[0.018, 0.05, 8]} />
-          <meshStandardMaterial color="#dddddd" roughness={0.2} />
+          <coneGeometry args={[0.016, 0.05, 16]} />
+          <meshStandardMaterial color="#e6e6e6" roughness={0.35} />
         </mesh>
       </group>
     </group>
@@ -459,20 +836,35 @@ function ClayPenstand() {
 
 // Background elements
 function BackgroundScenery() {
+  const wood = useMemo(() => createWoodTexture(), []);
+
   return (
     <group position={[0, 0, 0]}>
-      {/* Main Pedestal Platform */}
+      {/* Main Pedestal Platform (varnished oak) */}
       <mesh position={[-0.3, 0.1, 0.8]} castShadow receiveShadow>
         <cylinderGeometry args={[2.2, 2.3, 0.3, 64]} />
-        <meshStandardMaterial color="#c19a6b" roughness={0.8} /> {/* Realistic Oak Wood Color */}
+        <meshPhysicalMaterial map={wood} roughness={0.6} clearcoat={0.25} clearcoatRoughness={0.45} />
       </mesh>
       
       {/* Secondary laptop pedestal */}
       <mesh position={[-1.4, 0.28, 0.4]} castShadow receiveShadow>
         <cylinderGeometry args={[0.95, 1.0, 0.15, 48]} />
-        <meshStandardMaterial color="#a8855a" roughness={0.85} /> {/* Slightly darker wood tier */}
+        <meshPhysicalMaterial map={wood} color="#d9d0c2" roughness={0.65} clearcoat={0.2} clearcoatRoughness={0.5} /> {/* Slightly darker wood tier */}
       </mesh>
     </group>
+  );
+}
+
+// Warm studio reflections, generated locally (no HDR download)
+function StudioEnvironment() {
+  return (
+    <Environment resolution={256} environmentIntensity={0.8}>
+      <color attach="background" args={['#4a3a37']} />
+      <Lightformer form="rect" intensity={2.2} color="#fff1e8" position={[0, 6, 0]} rotation-x={Math.PI / 2} scale={[10, 6, 1]} />
+      <Lightformer form="rect" intensity={1.4} color="#ffd9cf" position={[-6, 2, 1]} rotation-y={Math.PI / 2} scale={[8, 3, 1]} />
+      <Lightformer form="rect" intensity={1.1} color="#ffe9d6" position={[6, 2, 2]} rotation-y={-Math.PI / 2} scale={[8, 3, 1]} />
+      <Lightformer form="rect" intensity={0.9} color="#ffc2b3" position={[0, 2, 7]} scale={[10, 2, 1]} />
+    </Environment>
   );
 }
 
@@ -538,8 +930,9 @@ export default function Background() {
         camera={{ position: [0.1, 2.1, 4.8], fov: 45 }}
         gl={{ antialias: true, alpha: true }}
       >
-        {/* Soft, extremely cozy warm rosy ambient light */}
-        <ambientLight intensity={1.5} color="#fff2f0" />
+        {/* Soft warm rosy ambient light (environment below adds the rest) */}
+        <ambientLight intensity={1.0} color="#fff2f0" />
+        <StudioEnvironment />
         
         {/* Main soft shadow casting directional light mimicking sunset/golden hour */}
         <directionalLight
@@ -550,6 +943,7 @@ export default function Background() {
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
           shadow-bias={-0.001}
+          shadow-normalBias={0.02}
         />
         
         {/* Back wall cutout accent light (soft pink-orange) */}

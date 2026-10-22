@@ -4,10 +4,12 @@ import type { Variants } from 'framer-motion';
 import { ReactLenis, useLenis } from 'lenis/react';
 import 'lenis/dist/lenis.css';
 import Background from './Background';
+import ParticleField from './ParticleField';
 import './index.css';
 
 const easeCustom = [0.16, 1, 0.3, 1] as [number, number, number, number];
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const CONTACT_EMAIL = 'tanishaasinha02@gmail.com';
 
 const heroStagger: Variants = {
   hidden: {},
@@ -59,40 +61,45 @@ const heroFocusAreas = ['LLM Systems', 'NLP', 'RAG', 'Agentic AI'];
 
 const experiences = [
   {
-    role: "AI/ML Tech Lead",
+    role: "Team Leader",
     company: "4th Orbit",
-    date: "Jul 2026 – Present",
+    date: "Jul 2026 – Present · 4 mos",
     points: [
-      "Managing a team of 7 engineers and leading the end-to-end execution of 4 concurrent AI/ML and product development projects.",
-      "Directing project planning, system architecture design, and sprint cycles while maintaining high engineering quality.",
-      "Orchestrating engineering efforts across cross-functional domains, ensuring seamless integration of ML services with frontends."
+      "Currently working as a Team Leader at 4th Orbit, managing a team across multiple projects and coordinating with clients to understand requirements and track project progress.",
+      "Managing team tasks and coordinating project execution.",
+      "Communicating with clients and helping align project requirements with deliverables.",
+      "Staying updated on project progress, new technologies, and developments relevant to our work."
     ],
     tech: ["Scikit-learn", "Pandas", "NumPy", "Hugging Face", "LangChain", "OpenAI API", "FastAPI", "Node/Express", "PostgreSQL", "Docker"]
   },
   {
     role: "AI/ML Engineer",
     company: "4th Orbit",
-    date: "Jul 2025 – Jun 2026",
+    date: "Jul 2025 – Jul 2026 · 1 yr 1 mo",
     points: [
-      "Built ML/AI core for two internal products — Orbithyre (AI recruitment) and Gaplytiq (job readiness) — owning end-to-end model development, NLP pipelines, and LLM integration.",
-      "Developed candidate–job matching engine (scikit-learn) with feature engineering on skills, experience, and role metadata; improved match quality 45%. Screening pipeline processed 1,000+ profiles, cutting manual review time 60%.",
-      "Built NLP pipelines for resume parsing, semantic skill extraction, and ATS-optimized resume generation using Hugging Face Transformers and prompt-chained LLM workflows.",
-      "Designed LLM-as-evaluator mock interview system assessing technical depth, role fit, and communication quality with structured feedback generation.",
-      "Engineered skill-gap analysis pipeline comparing competency profiles against JD requirements; produced ranked upskilling recommendations via LangChain reasoning chains.",
-      "Built recruiter-configurable assessment workflows with dynamic, difficulty-targeted question generation powered by LLM pipelines.",
-      "Developed hiring analytics and job-readiness dashboards backed by ML-scored signals and pipeline conversion data."
+      "Worked on building AI-powered products for education and recruitment, focusing on integrating LLMs and AI-based evaluation systems into real-world applications.",
+      "Gaplytiq (AI-Powered Learning Platform) — Developed an AI-powered interview feature to help users practice and evaluate their interview skills, and built an AI-powered resume maker using LLM integration.",
+      "Gaplytiq — Developed an AI agent that analyzes students’ test-series results and provides deeper insights into their performance and learning gaps.",
+      "Gaplytiq — Integrated AI features into the application and worked on frontend development to deliver a complete user experience.",
+      "OrbitHyre (AI-Powered Recruitment Platform) — Built OrbitHyre from scratch, including job posting and AI-powered candidate screening features.",
+      "OrbitHyre — Implemented a hybrid candidate-matching approach to compare resumes with job requirements and help recruiters identify suitable candidates.",
+      "OrbitHyre — Worked on AI-based evaluation models to assess candidates as part of the hiring process.",
+      "OrbitHyre — Integrated proctoring-enabled assessments to support candidate evaluation during tests.",
+      "OrbitHyre — Connected AI capabilities with application workflows to reduce manual effort in the initial screening process."
     ],
     tech: ["Scikit-learn", "Pandas", "NumPy", "Hugging Face", "LangChain", "OpenAI API", "FastAPI", "Node/Express", "PostgreSQL", "Docker"]
   },
   {
     role: "Research Intern",
-    company: "IIIT Naya Raipur",
+    company: "IIIT-Naya Raipur",
     date: "Jan 2024 – Jun 2024",
     points: [
-      "Conducted performance analysis of Apache Spark job schedulers for large-scale big data workloads, evaluating 3+ scheduling strategies to optimize resource utilization and execution efficiency.",
-      "Benchmarked experiments on 100K+ record datasets, reducing job completion time 25% and improving cluster resource utilization 30% through scheduler tuning.",
-      "Analyzed key metrics (latency, throughput, memory usage, task distribution) to identify bottlenecks and optimization opportunities.",
-      "Published research findings accepted at TENSYMP 2024, contributing practical insights to big data analytics and distributed computing."
+      "As a Research Intern at IIIT-Naya Raipur, I worked on analyzing the performance of different job schedulers in Apache Spark to improve big data processing.",
+      "Compared different scheduling methods, including FIFO, FAIR, and DAG-based scheduling.",
+      "Analyzed execution time, resource utilization, and scalability under different workloads.",
+      "Studied how job dependencies, task parallelism, and workload balancing affect performance.",
+      "Identified effective scheduling approaches for improving the performance of Spark-based data processing.",
+      "This research helped me gain practical knowledge of big data processing, performance analysis, and Apache Spark scheduling techniques."
     ],
     tech: ["Apache Spark", "PySpark", "Hadoop", "YARN", "Python", "Pandas", "NumPy", "Jupyter", "Linux"]
   }
@@ -121,7 +128,7 @@ function ExperienceCard({ exp }: { exp: any }) {
           <div className="card-prompt">Hover or tap to flip <span className="blinking-cursor">_</span></div>
         </div>
         <div className="flashcard-back">
-          <div className="card-scrollable">
+          <div className="card-scrollable" data-lenis-prevent>
             <ul className="exp-bullet-list">
               {exp.points.map((p: string, i: number) => (
                 <li key={i}>{p}</li>
@@ -139,11 +146,22 @@ function ExperienceCard({ exp }: { exp: any }) {
   );
 }
 
+const coursework = [
+  "Artificial Intelligence: Principles and Applications",
+  "Pattern Recognition and Machine Learning",
+  "Natural Language Processing and Image Processing",
+  "Python for Data Science and R for Data Science",
+  "Intelligent Data Analysis and Data Visualization",
+  "Big Data Analytics and Apache Spark-related research",
+  "Computer Networks, Cloud Computing, and Software Engineering",
+  "Data Wrangling, Data Warehousing, and Super Computing",
+];
+
 function EducationCard() {
   return (
     <motion.div 
       className="education-card"
-      whileHover={{ scale: 1.02, y: -5 }}
+      whileHover={{ scale: 1.01, y: -3 }}
       transition={{ type: "spring", stiffness: 300 }}
     >
       <div className="edu-glow"></div>
@@ -151,8 +169,20 @@ function EducationCard() {
       <h4>Chhattisgarh Swami Vivekanand Technical University | 2021 – 2025</h4>
       <div className="edu-footer">
         <span className="cgpa-badge">CGPA: 8.14</span>
-        <span className="edu-status">Graduating 2025</span>
+        <span className="edu-status">Graduated 2025</span>
       </div>
+      <p className="edu-intro">
+        During my B.Tech (Hons.) in Data Science, I studied subjects that built my foundation in Artificial Intelligence, Machine Learning, and data-driven application development.
+      </p>
+      <h5 className="edu-coursework-title">Relevant coursework</h5>
+      <ul className="edu-coursework-list">
+        {coursework.map((course) => (
+          <li key={course}>{course}</li>
+        ))}
+      </ul>
+      <p className="edu-outro">
+        These subjects helped me develop a foundation in AI/ML concepts, data analysis, and software development, which I apply in my work as an AI/ML Engineer building AI-powered applications and solutions.
+      </p>
     </motion.div>
   );
 }
@@ -165,19 +195,17 @@ const skillsData = [
 
 const projectsData = [
   {
-    title: "RetailGPT: AI-Powered Business Intelligence Platform",
+    title: "RetailGPT — Autonomous AI Business Analyst",
     date: "May 2026 – Present",
     link: "https://retail-gpt.vercel.app/",
-    problem: "Retail businesses drown in sales data but lack tools to query it without SQL knowledge, detect anomalies in real time, or forecast demand before stock-outs hit. RetailGPT bridges that gap.",
+    problem: "An AI-powered business intelligence platform for D2C and retail businesses that analyzes Shopify and Stripe data to identify anomalies, forecast demand, prevent stock-outs, and detect potential payment gateway exploits.",
     solution: [
-      "Built full-stack BI platform (React, Node.js, Python) enabling natural language querying over 50K-row retail dataset via Text-to-SQL pipeline (OpenAI API) with Supabase/SQLite backend",
-      "Developed XGBoost-based demand forecasting and auto-pilot stock reordering system to predict future trends and prevent stock-outs",
-      "Implemented Isolation Forest anomaly detection for real-time outlier flagging across revenue, profit, and quantity; extended monitoring to payment logs for exploit pattern detection",
-      "Built RAG pipeline (ChromaDB + sentence-transformers) for semantic retrieval over corporate policy documents, enriching chatbot responses with contextual grounding",
-      "Engineered automated chart-type inference generating dynamic Recharts visualizations (line, bar, pie, table) based on SQL result shape and query intent",
-      "Designed fault-tolerant fallback layer: cloud failure degrades gracefully to local SQLite and keyword matching, ensuring zero-downtime reliability"
+      "Continuous Anomaly Detection — Identifies unusual patterns in business data.",
+      "Predictive Demand Forecasting — Predicts future demand to support inventory planning.",
+      "Auto-Pilot Stock Reordering — Automates stock-reordering decisions to help prevent stock-outs.",
+      "Payment Gateway Exploits Guard — Monitors payment logs for suspicious patterns and potential exploits."
     ],
-    tech: ["Python", "Node.js", "React", "TypeScript", "XGBoost", "OpenAI API", "ChromaDB", "Sentence-Transformers", "Pandas", "NumPy", "Supabase", "SQLite", "Recharts", "Vite"]
+    tech: ["React", "Node.js", "Python", "OpenAI API", "XGBoost", "Isolation Forest", "ChromaDB", "Sentence Transformers", "Supabase", "SQLite", "Recharts"]
   },
   {
     title: "Predictive Maintenance for Industrial Machinery",
@@ -207,7 +235,7 @@ const projectsData = [
 function SkillsSection() {
   return (
     <>
-      <h2 className="section-title" style={{ marginTop: '4rem' }}>Skills</h2>
+      <h2 className="section-title">Skills</h2>
       <div className="skills-container">
         {skillsData.map((group, idx) => (
           <motion.div 
@@ -226,6 +254,115 @@ function SkillsSection() {
         ))}
       </div>
     </>
+  );
+}
+
+const networkLayers = [
+  [{ x: 30, y: 40 }, { x: 30, y: 90 }, { x: 30, y: 140 }],
+  [{ x: 140, y: 22 }, { x: 140, y: 68 }, { x: 140, y: 114 }, { x: 140, y: 160 }],
+  [{ x: 250, y: 65 }, { x: 250, y: 118 }],
+];
+
+function DesktopDoodles() {
+  return (
+    <div className="desk-doodles" aria-hidden="true">
+      <div className="doodle-paper-wash" />
+      <svg className="doodle-pattern" width="100%" height="100%">
+        <defs>
+          <pattern id="desk-doodle-tile" width="340" height="340" patternUnits="userSpaceOnUse" patternTransform="rotate(-3)">
+            <g fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M36 34 L41 48 L56 49 L44 58 L48 73 L36 64 L24 73 L28 58 L16 49 L31 48 Z" />
+              <path d="M108 42 q10 -14 20 0 t20 0 t20 0 t20 0" />
+              <path d="M236 68 h32 v18 a13 13 0 0 1 -13 13 h-6 a13 13 0 0 1 -13 -13 z" />
+              <path d="M268 74 h6 a7 7 0 0 1 0 14 h-6" />
+              <path d="M246 58 q-4 -7 0 -14 M258 58 q-4 -7 0 -14" />
+              <path d="M58 148 l-13 13 l13 13 M86 148 l13 13 l-13 13 M75 142 l-8 34" />
+              <circle cx="178" cy="158" r="20" strokeDasharray="5 7" />
+              <path d="M248 188 h40 v28 h-40 z M240 220 h56 l-4 7 h-48 z" />
+              <path d="M138 242 v26 M125 255 h26 M130 246 l18 18 M148 246 l-18 18" strokeWidth="1.3" />
+              <path d="M38 274 a4 4 0 1 1 6 4 a9 9 0 1 1 -14 -10 a14 14 0 1 1 22 16" />
+              <path d="M216 266 a13 13 0 0 1 8 24 v6 h-16 v-6 a13 13 0 0 1 8 -24 z M210 302 h12" />
+              <path d="M300 40 l8 18 h-16 z M304 62 v10" />
+              <path d="M90 210 q18 -8 36 0 q-18 8 -36 0" />
+              <rect x="280" y="210" width="28" height="36" rx="3" />
+              <path d="M286 218 h16 M286 226 h16 M286 234 h10" strokeWidth="1.2" />
+            </g>
+            <g fill="currentColor">
+              <circle cx="100" cy="110" r="2" />
+              <circle cx="300" cy="150" r="2" />
+              <circle cx="260" cy="300" r="2" />
+              <circle cx="120" cy="310" r="2" />
+              <circle cx="200" cy="80" r="1.6" />
+            </g>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#desk-doodle-tile)" />
+      </svg>
+
+      <div className="doodle-note">
+        <span className="doodle-note-title">Tanisha's desk</span>
+        <svg className="doodle-note-underline" viewBox="0 0 220 14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <path d="M4 9 C 40 2, 70 13, 110 7 S 180 3, 216 8" />
+        </svg>
+        <span className="doodle-note-hint">pick a sticky note to explore</span>
+        <svg className="doodle-note-arrow" viewBox="0 0 120 70" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M112 6 C 96 40, 56 60, 12 48" />
+          <path d="M26 38 L11 48 L25 59" />
+        </svg>
+      </div>
+
+      <svg className="doodle-sun" viewBox="0 0 200 200" fill="none" strokeLinecap="round">
+        <circle cx="100" cy="100" r="46" className="doodle-sun-fill" />
+        <circle cx="103" cy="97" r="48" className="doodle-sun-sketch" strokeWidth="2" />
+        {Array.from({ length: 12 }, (_, i) => {
+          const a = (i * Math.PI) / 6;
+          return (
+            <line
+              key={i}
+              x1={100 + Math.cos(a) * 62}
+              y1={100 + Math.sin(a) * 62}
+              x2={100 + Math.cos(a) * (i % 2 ? 76 : 84)}
+              y2={100 + Math.sin(a) * (i % 2 ? 76 : 84)}
+              className="doodle-sun-sketch"
+              strokeWidth="2.5"
+            />
+          );
+        })}
+      </svg>
+
+      <div className="doodle-sticker doodle-sticker-hello">
+        <span>hello, world ✦</span>
+      </div>
+      <div className="doodle-sticker doodle-sticker-ship">
+        <span>ship it →</span>
+      </div>
+
+      <svg className="doodle-network" viewBox="0 0 280 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        {networkLayers.slice(0, -1).flatMap((layer, li) =>
+          layer.flatMap((a, ai) =>
+            networkLayers[li + 1].map((b, bi) => (
+              <line key={`${li}-${ai}-${bi}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y} opacity="0.5" />
+            ))
+          )
+        )}
+        {networkLayers.flat().map((n, i) => (
+          <circle key={i} cx={n.x} cy={n.y} r="9" className="doodle-node" strokeWidth="2" />
+        ))}
+        <text x="140" y="194" textAnchor="middle" className="doodle-caption">model.fit(coffee)</text>
+      </svg>
+
+      <svg className="doodle-mug" viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 48 h60 v30 a22 22 0 0 1 -22 22 h-16 a22 22 0 0 1 -22 -22 z" className="doodle-mug-fill" />
+        <path d="M82 56 h8 a12 12 0 0 1 0 24 h-8" />
+        <path d="M38 38 q-7 -10 0 -20 M52 38 q-7 -10 0 -20 M66 38 q-7 -10 0 -20" />
+        <path d="M34 66 q8 6 16 0 t16 0" opacity="0.6" />
+      </svg>
+
+      <svg className="doodle-scribble" viewBox="0 0 180 80" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M8 40 C 30 10, 50 70, 72 40 S 114 10, 136 42 S 164 68, 172 36" />
+        <path d="M20 58 C 48 48, 70 72, 98 54 S 140 40, 168 60" opacity="0.55" />
+      </svg>
+    </div>
   );
 }
 
@@ -249,7 +386,7 @@ function DesktopIcon({ icon, label, onClick }: { icon: React.ReactNode, label: s
 
 function ProjectsSection() {
   return (
-    <div className="projects-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', padding: '1rem' }}>
+    <div className="projects-wrapper">
       {projectsData.map((proj, i) => (
         <motion.div 
           key={i} 
@@ -258,38 +395,35 @@ function ProjectsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.1 }}
-          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '2rem' }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <h3 style={{ color: '#00fff9', fontSize: '1.4rem', fontFamily: 'var(--ff)', margin: 0, lineHeight: 1.3 }}>
-              {(proj as any).link ? (
-                <a href={(proj as any).link} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dotted #00fff9' }}>
+          <div className="project-card-head">
+            <h3 className="project-card-title">
+              {'link' in proj && proj.link ? (
+                <a href={proj.link} target="_blank" rel="noreferrer">
                   {proj.title} ↗
                 </a>
               ) : (
                 proj.title
               )}
             </h3>
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{proj.date}</span>
+            <span className="project-card-date">{proj.date}</span>
           </div>
           
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ color: '#fff', fontSize: '1.05rem', marginBottom: '0.5rem', fontWeight: 600 }}>Problem Statement</h4>
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.5, margin: 0 }}>{proj.problem}</p>
+          <div className="project-card-block">
+            <h4 className="project-card-label">Problem Statement</h4>
+            <p className="project-card-text">{proj.problem}</p>
           </div>
 
-          <div style={{ marginBottom: '1.5rem' }}>
-            <h4 style={{ color: '#fff', fontSize: '1.05rem', marginBottom: '0.5rem', fontWeight: 600 }}>What I Did</h4>
-            <ul style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', lineHeight: 1.6, paddingLeft: '1.5rem', margin: 0 }}>
-              {proj.solution.map((item, j) => <li key={j} style={{ marginBottom: '0.3rem' }}>{item}</li>)}
+          <div className="project-card-block">
+            <h4 className="project-card-label">What I Did</h4>
+            <ul className="project-card-list">
+              {proj.solution.map((item, j) => <li key={j}>{item}</li>)}
             </ul>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem' }}>
+          <div className="tech-stack-pills">
             {proj.tech.map((t, j) => (
-              <span key={j} style={{ background: 'rgba(0,255,249,0.1)', color: '#00fff9', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 }}>
-                {t}
-              </span>
+              <span key={j} className="tech-pill">{t}</span>
             ))}
           </div>
         </motion.div>
@@ -372,7 +506,7 @@ function AppWindow({ title, onClose, icon, children }: { title: string, onClose:
           </svg>
         </button>
       </div>
-      <div className="window-content">
+      <div className="window-content" data-lenis-prevent>
         {children}
       </div>
     </motion.div>
@@ -398,21 +532,18 @@ function TaskbarClock() {
 function App() {
   // Lenis context is only available under <ReactLenis>, so hooks that need it live in PortfolioShell
   return (
-    <ReactLenis root>
+    <ReactLenis root options={{ allowNestedScroll: true }}>
       <PortfolioShell />
     </ReactLenis>
   );
 }
 
 function PortfolioShell() {
-  const curRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const cursorIconRef = useRef<HTMLDivElement>(null);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
   const [activeApp, setActiveApp] = useState<string | null>(null);
-  const requestRef = useRef<number | undefined>(undefined);
-  const rxRef = useRef(0);
-  const ryRef = useRef(0);
   const lenis = useLenis();
   const prefersReducedMotion = useReducedMotion();
 
@@ -441,63 +572,30 @@ function PortfolioShell() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Pointer cursor icon on the hero (system cursor hidden there only)
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-      if (curRef.current) {
-        curRef.current.style.left = e.clientX - 4 + 'px';
-        curRef.current.style.top = e.clientY - 4 + 'px';
-      }
-    };
-
-    const animRing = () => {
-      rxRef.current += (mousePos.x - rxRef.current) * 0.12;
-      ryRef.current += (mousePos.y - ryRef.current) * 0.12;
-      if (ringRef.current) {
-        ringRef.current.style.left = rxRef.current - 16 + 'px';
-        ringRef.current.style.top = ryRef.current - 16 + 'px';
-      }
-      requestRef.current = requestAnimationFrame(animRing);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    requestRef.current = requestAnimationFrame(animRing);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-    };
-  }, [mousePos]);
+    document.documentElement.classList.toggle('hero-cursor', !isInsideScreen);
+    return () => document.documentElement.classList.remove('hero-cursor');
+  }, [isInsideScreen]);
 
   useEffect(() => {
-    const handleMouseEnter = () => {
-      if (ringRef.current) {
-        ringRef.current.style.transform = 'scale(2)';
-        ringRef.current.style.opacity = '0.5';
-      }
-    };
-    const handleMouseLeave = () => {
-      if (ringRef.current) {
-        ringRef.current.style.transform = 'scale(1)';
-        ringRef.current.style.opacity = '1';
-      }
-    };
+    if (isInsideScreen) return;
+    const el = cursorIconRef.current;
+    if (!el) return;
 
-    const interactables = document.querySelectorAll('a, button, .proj-row, .skill-cell');
-    interactables.forEach((el) => {
-      el.addEventListener('mouseenter', handleMouseEnter);
-      el.addEventListener('mouseleave', handleMouseLeave);
-    });
+    const onMove = (e: MouseEvent) => {
+      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      el.classList.add('is-visible');
+    };
+    const onLeave = () => el.classList.remove('is-visible');
 
+    window.addEventListener('mousemove', onMove, { passive: true });
+    window.addEventListener('mouseleave', onLeave);
     return () => {
-      interactables.forEach((el) => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseleave', onLeave);
     };
-  }, []);
+  }, [isInsideScreen]);
 
   const enterWorkspace = () => {
     const target = document.getElementById('work');
@@ -507,6 +605,27 @@ function PortfolioShell() {
       lenis.scrollTo(target, { duration: 2.8, easing: easeInOutCubic });
     } else {
       target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    }
+  };
+
+  const openEmailModal = () => {
+    setEmailCopied(false);
+    setIsEmailOpen(true);
+  };
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(CONTACT_EMAIL);
+      setEmailCopied(true);
+    } catch {
+      // Fallback for older browsers / denied clipboard
+      const input = document.createElement('input');
+      input.value = CONTACT_EMAIL;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setEmailCopied(true);
     }
   };
 
@@ -524,8 +643,21 @@ function PortfolioShell() {
       </svg>
 
       <Background />
-      <div className="cursor" id="cur" ref={curRef}></div>
-      <div className="cursor-ring" id="ring" ref={ringRef}></div>
+      <ParticleField active={!isInsideScreen} reducedMotion={prefersReducedMotion} />
+
+      {!isInsideScreen && (
+        <div className="hero-cursor-icon" ref={cursorIconRef} aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M5.5 3.2 L5.5 18.8 L10.2 14.6 L13.1 21.2 L15.6 20.1 L12.6 13.4 L18.5 13.2 Z"
+              fill="var(--ink)"
+              stroke="var(--paper)"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      )}
 
       {/* Soft paper wash + vignette that blends the hero type into the 3D desk */}
       <motion.div className="hero-atmosphere" aria-hidden="true" style={{ opacity: atmosphereOpacity }} />
@@ -553,12 +685,12 @@ function PortfolioShell() {
                 RESUME
                 <span className="btn-resume-arrow" aria-hidden="true">↗</span>
               </a>
-              <a className="btn-mail-circle" aria-label="Send email" href="mailto:tanishaasinha02@gmail.com">
+              <button type="button" className="btn-mail-circle" aria-label="Connect with me" onClick={openEmailModal}>
                 <svg aria-hidden="true" viewBox="0 0 24 20" width="18" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-              </a>
+              </button>
             </div>
           </motion.nav>
         )}
@@ -575,7 +707,7 @@ function PortfolioShell() {
           initial={prefersReducedMotion ? 'visible' : 'hidden'}
           animate="visible"
         >
-          <h1 className="hero-title" aria-label="Tanisha Sinha, AI/ML Tech Lead">
+          <h1 className="hero-title" aria-label="Tanisha Sinha, Team Leader">
             <motion.span className="hero-reveal" variants={heroItem}>
               <span className="hero-name-primary">Tanisha</span>
             </motion.span>
@@ -583,7 +715,7 @@ function PortfolioShell() {
             <span className="hero-mid-row">
               <motion.span className="hero-designation-col" variants={heroItem}>
                 <span className="hero-designation">AI / ML</span>
-                <span className="hero-designation" style={{ marginTop: 0 }}>Tech Lead</span>
+                <span className="hero-designation" style={{ marginTop: 0 }}>Team Leader</span>
               </motion.span>
 
               <motion.span className="hero-reveal" variants={heroItem}>
@@ -594,7 +726,7 @@ function PortfolioShell() {
 
           <motion.div className="hero-summary-block" variants={heroSummaryStagger}>
             <motion.p className="hero-bio" variants={heroSummaryItem}>
-              Leading a team of 7 engineers at <strong>4th Orbit</strong>, turning NLP pipelines, LLM workflows and ML models into real products.
+              Team Leader at <strong>4th Orbit</strong>, managing projects across the team and coordinating with clients to ship AI-powered products.
             </motion.p>
             <motion.ul className="hero-skills-mini" aria-label="Focus areas" variants={heroSummaryItem}>
               {heroFocusAreas.map((area) => (
@@ -611,7 +743,7 @@ function PortfolioShell() {
                   </svg>
                 </span>
               </button>
-              <a className="hero-cta-link" href="mailto:tanishaasinha02@gmail.com">Get in touch</a>
+              <button type="button" className="hero-cta-link" onClick={openEmailModal}>Get in touch</button>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -644,8 +776,9 @@ function PortfolioShell() {
           viewport={{ once: false, margin: "-10%" }}
           transition={{ duration: 1.0, ease: easeCustom }}
         >
-          <div className="os-container" style={{ backgroundImage: `url('${import.meta.env.BASE_URL}wallpaper.png')` }}>
-            
+          <div className="os-container">
+            <DesktopDoodles />
+
             <div className="desktop-workspace">
               <div className="desktop-grid">
                 <DesktopIcon 
@@ -690,10 +823,10 @@ function PortfolioShell() {
                     <span className="widget-badge">EXPERIENCE PREVIEW</span>
                     <span className="widget-action-hint">Explore App ↗</span>
                   </div>
-                  <h3 className="widget-title">AI/ML Tech Lead</h3>
-                  <h4 className="widget-subtitle">4th Orbit • Jul 2026 – Present</h4>
+                  <h3 className="widget-title">Team Leader</h3>
+                  <h4 className="widget-subtitle">4th Orbit • Jul 2026 – Present · 4 mos</h4>
                   <p className="widget-text">
-                    Promoted to Tech Lead, managing 7 engineers and directing the execution of 4 concurrent AI/ML and product development projects.
+                    Managing a team across multiple projects and coordinating with clients to understand requirements and track project progress.
                   </p>
                 </div>
 
@@ -713,8 +846,8 @@ function PortfolioShell() {
                   <div className="widget-project-item">
                     <span className="project-dot"></span>
                     <div>
-                      <div className="widget-project-title">RetailGPT BI Platform</div>
-                      <div className="widget-project-desc">Natural language Text-to-SQL & XGBoost forecasting.</div>
+                      <div className="widget-project-title">RetailGPT — AI Business Analyst</div>
+                      <div className="widget-project-desc">Shopify & Stripe BI: anomalies, demand forecast, stock reorder & payment guards.</div>
                     </div>
                   </div>
                   <div className="widget-project-item">
@@ -779,28 +912,28 @@ function PortfolioShell() {
                     onClose={() => setActiveApp(null)}
                     icon={<svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>}
                   >
-                    <div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}>
-                      <h2 style={{ color: '#fff', fontSize: '2.5rem', marginBottom: '2rem', fontFamily: 'var(--ff)', textAlign: 'center' }}>Connect With Me</h2>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                        <a href="mailto:tanishaasinha02@gmail.com" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff00c1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>Email</span>
-                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>tanishaasinha02@gmail.com</span>
+                    <div className="socials-panel">
+                      <h2 className="socials-title">Connect With Me</h2>
+                      <div className="socials-list">
+                        <button type="button" className="social-link" onClick={openEmailModal}>
+                          <svg className="social-link-icon social-link-icon--email" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                          <div className="social-link-text">
+                            <span className="social-link-name">Email</span>
+                            <span className="social-link-meta">{CONTACT_EMAIL}</span>
+                          </div>
+                        </button>
+                        <a href="https://www.linkedin.com/in/tanishasinhaa" target="_blank" rel="noreferrer" className="social-link">
+                          <svg className="social-link-icon social-link-icon--linkedin" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                          <div className="social-link-text">
+                            <span className="social-link-name">LinkedIn</span>
+                            <span className="social-link-meta">Connect professionally</span>
                           </div>
                         </a>
-                        <a href="https://www.linkedin.com/in/tanishasinhaa" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0077B5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>LinkedIn</span>
-                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Connect professionally</span>
-                          </div>
-                        </a>
-                        <a href="https://github.com/tanisshaaa" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', textDecoration: 'none', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', transition: 'all 0.2s' }}>
-                          <svg aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                          <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '1.2rem', fontWeight: 600 }}>GitHub</span>
-                            <span style={{ color: 'rgba(255,255,255,0.6)' }}>Check out my repositories</span>
+                        <a href="https://github.com/tanisshaaa" target="_blank" rel="noreferrer" className="social-link">
+                          <svg className="social-link-icon" aria-hidden="true" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                          <div className="social-link-text">
+                            <span className="social-link-name">GitHub</span>
+                            <span className="social-link-meta">Check out my repositories</span>
                           </div>
                         </a>
                       </div>
@@ -916,8 +1049,43 @@ function PortfolioShell() {
                 </a>
               </div>
               <h2>About Me</h2>
-              <p>I am an AI/ML Tech Lead at 4th Orbit, leading a team of 7 engineers and directing the execution of 4 concurrent projects. I hold a B.Tech (Hons.) in Computer Science (Data Science) from CSVTU (2025, CGPA 8.14).</p>
+              <p>I am a Team Leader at 4th Orbit, managing a team across multiple projects and coordinating with clients to understand requirements and track progress. I hold a B.Tech (Hons.) in Computer Science (Data Science) from CSVTU (2025, CGPA 8.14).</p>
               <p>My expertise spans Machine Learning, LLM Fine-tuning, Prompt Engineering, RAG, and Agentic AI. I build with FastAPI, Docker, n8n, and Power BI, leveraging frameworks like Hugging Face, LangChain, and the OpenAI API.</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isEmailOpen && (
+          <motion.div
+            className="glass-modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsEmailOpen(false)}
+          >
+            <motion.div
+              className="email-modal-content"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="email-modal-title"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', bounce: 0.3 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button type="button" className="email-modal-close" aria-label="Close email modal" onClick={() => setIsEmailOpen(false)}>×</button>
+              <p className="email-modal-eyebrow">Say hello</p>
+              <h2 id="email-modal-title">Connect with me here</h2>
+              <p className="email-modal-body">Copy my email and reach out whenever you'd like to chat about AI, products, or collaboration.</p>
+              <div className="email-modal-row">
+                <code className="email-modal-address" tabIndex={0}>{CONTACT_EMAIL}</code>
+                <button type="button" className="email-modal-copy" onClick={copyEmail}>
+                  {emailCopied ? 'Copied!' : 'Copy email'}
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
