@@ -1,48 +1,61 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ReactLenis } from 'lenis/react';
+import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import type { Variants } from 'framer-motion';
+import { ReactLenis, useLenis } from 'lenis/react';
 import 'lenis/dist/lenis.css';
 import Background from './Background';
 import './index.css';
 
 const easeCustom = [0.16, 1, 0.3, 1] as [number, number, number, number];
+const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
-/* COMMENTED OUT FOR NOW:
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
+const heroStagger: Variants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.25,
+    },
+  },
+};
+
+const heroItem: Variants = {
+  hidden: { opacity: 0, y: 36, filter: 'blur(10px)' },
   visible: {
     opacity: 1,
     y: 0,
+    filter: 'blur(0px)',
     transition: {
-      duration: 1.0,
+      duration: 1.3,
       ease: easeCustom,
     },
   },
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
+const heroSummaryStagger: Variants = {
+  hidden: {},
   visible: {
-    opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.1,
+      delayChildren: 0.25,
     },
   },
 };
 
-const staggerItem = {
-  hidden: { opacity: 0, y: 30 },
+const heroSummaryItem: Variants = {
+  hidden: { opacity: 0, y: 18, filter: 'blur(6px)' },
   visible: {
     opacity: 1,
     y: 0,
+    filter: 'blur(0px)',
     transition: {
-      duration: 0.8,
+      duration: 1.1,
       ease: easeCustom,
     },
   },
 };
-*/
+
+const heroFocusAreas = ['LLM Systems', 'NLP', 'RAG', 'Agentic AI'];
 
 const experiences = [
   {
@@ -383,6 +396,15 @@ function TaskbarClock() {
 }
 
 function App() {
+  // Lenis context is only available under <ReactLenis>, so hooks that need it live in PortfolioShell
+  return (
+    <ReactLenis root>
+      <PortfolioShell />
+    </ReactLenis>
+  );
+}
+
+function PortfolioShell() {
   const curRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -391,7 +413,18 @@ function App() {
   const requestRef = useRef<number | undefined>(undefined);
   const rxRef = useRef(0);
   const ryRef = useRef(0);
-  // const lenis = useLenis();
+  const lenis = useLenis();
+  const prefersReducedMotion = useReducedMotion();
+
+  const { scrollY } = useScroll();
+  const heroOpacity = useTransform(scrollY, (v) => Math.max(0, 1 - v / (window.innerHeight * 0.55)));
+  const heroY = useTransform(scrollY, (v) => v * 0.35);
+  const heroBlur = useTransform(scrollY, (v) => {
+    const blur = Math.min(8, (v / window.innerHeight) * 14);
+    return blur < 0.2 ? 'none' : `blur(${blur}px)`;
+  });
+  const atmosphereOpacity = useTransform(scrollY, (v) => Math.max(0, 1 - v / (window.innerHeight * 0.8)));
+  const scrollCueOpacity = useTransform(scrollY, (v) => Math.max(0, 1 - v / (window.innerHeight * 0.18)));
 
   const [isInsideScreen, setIsInsideScreen] = useState(false);
 
@@ -466,21 +499,19 @@ function App() {
     };
   }, []);
 
-  /* COMMENTED OUT FOR NOW:
-  const scrollTo = (id: string) => {
-    if (lenis) {
-      lenis.scrollTo(`#${id}`, {
-        duration: 1.6,
-        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expoOut
-      });
+  const enterWorkspace = () => {
+    const target = document.getElementById('work');
+    if (!target) return;
+    if (lenis && !prefersReducedMotion) {
+      // Long eased scroll so the camera dive in Background plays out instead of jumping
+      lenis.scrollTo(target, { duration: 2.8, easing: easeInOutCubic });
     } else {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
     }
   };
-  */
 
   return (
-    <ReactLenis root>
+    <>
       {/* Hidden SVG Filter for Pixel Glitch Effect */}
       <svg aria-hidden="true" width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }}>
         <filter id="pixelate-glitch">
@@ -496,70 +527,108 @@ function App() {
       <div className="cursor" id="cur" ref={curRef}></div>
       <div className="cursor-ring" id="ring" ref={ringRef}></div>
 
+      {/* Soft paper wash + vignette that blends the hero type into the 3D desk */}
+      <motion.div className="hero-atmosphere" aria-hidden="true" style={{ opacity: atmosphereOpacity }} />
+
       {/* LUXURY PILL NAVBAR */}
       <AnimatePresence>
         {!isInsideScreen && (
           <motion.nav
             className="luxury-nav"
-            initial={{ opacity: 0, y: -20 }}
+            aria-label="Primary"
+            initial={{ opacity: 0, y: -24 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5, ease: easeCustom }}
+            exit={{ opacity: 0, y: -24 }}
+            transition={{ duration: 0.9, delay: 0.1, ease: easeCustom }}
           >
             {/* Left Pill Capsule */}
             <div className="nav-capsule-left">
-              <div className="nav-logo-circle">TS</div>
+              <div className="nav-logo-circle" aria-hidden="true">TS</div>
               <a href="#about" className="nav-capsule-link" onClick={(e) => { e.preventDefault(); setIsAboutOpen(true); }}>About</a>
             </div>
 
             {/* Right Buttons Container */}
             <div className="nav-capsule-right">
-              <button className="btn-resume-capsule" onClick={() => window.open(import.meta.env.BASE_URL + 'AI_ML_Engineer.pdf', '_blank')}>RESUME</button>
-              <button className="btn-mail-circle" aria-label="Send email" onClick={() => window.location.href = 'mailto:tanishaasinha02@gmail.com'}>
+              <a className="btn-resume-capsule" href={import.meta.env.BASE_URL + 'AI_ML_Engineer.pdf'} target="_blank" rel="noreferrer">
+                RESUME
+                <span className="btn-resume-arrow" aria-hidden="true">↗</span>
+              </a>
+              <a className="btn-mail-circle" aria-label="Send email" href="mailto:tanishaasinha02@gmail.com">
                 <svg aria-hidden="true" viewBox="0 0 24 20" width="18" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-              </button>
+              </a>
             </div>
           </motion.nav>
         )}
       </AnimatePresence>
 
-      {/* Typographic Hero Name and Designation Overlay */}
-      <div className="hero-container">
-        <div className="hero-typographic-block">
-          <motion.div
-            className="hero-name-primary"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.15, ease: easeCustom }}
-          >
-            Tanisha
+      {/* Typographic Hero: name + designation, short bio, CTA */}
+      <motion.div
+        className="hero-container"
+        style={prefersReducedMotion ? { opacity: heroOpacity } : { opacity: heroOpacity, y: heroY, filter: heroBlur }}
+      >
+        <motion.div
+          className="hero-typographic-block"
+          variants={heroStagger}
+          initial={prefersReducedMotion ? 'visible' : 'hidden'}
+          animate="visible"
+        >
+          <h1 className="hero-title" aria-label="Tanisha Sinha, AI/ML Tech Lead">
+            <motion.span className="hero-reveal" variants={heroItem}>
+              <span className="hero-name-primary">Tanisha</span>
+            </motion.span>
+
+            <span className="hero-mid-row">
+              <motion.span className="hero-designation-col" variants={heroItem}>
+                <span className="hero-designation">AI / ML</span>
+                <span className="hero-designation" style={{ marginTop: 0 }}>Tech Lead</span>
+              </motion.span>
+
+              <motion.span className="hero-reveal" variants={heroItem}>
+                <span className="hero-name-massive">Sinha</span>
+              </motion.span>
+            </span>
+          </h1>
+
+          <motion.div className="hero-summary-block" variants={heroSummaryStagger}>
+            <motion.p className="hero-bio" variants={heroSummaryItem}>
+              Leading a team of 7 engineers at <strong>4th Orbit</strong>, turning NLP pipelines, LLM workflows and ML models into real products.
+            </motion.p>
+            <motion.ul className="hero-skills-mini" aria-label="Focus areas" variants={heroSummaryItem}>
+              {heroFocusAreas.map((area) => (
+                <li key={area} className="hero-skill-tag">{area}</li>
+              ))}
+            </motion.ul>
+            <motion.div className="hero-actions-row" variants={heroSummaryItem}>
+              <button type="button" className="hero-cta-primary" onClick={enterWorkspace}>
+                Explore my work
+                <span className="hero-cta-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                  </svg>
+                </span>
+              </button>
+              <a className="hero-cta-link" href="mailto:tanishaasinha02@gmail.com">Get in touch</a>
+            </motion.div>
           </motion.div>
-          
-          <div className="hero-mid-row">
-            <motion.div
-              className="hero-designation-col"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.2, ease: easeCustom }}
-            >
-              <span className="hero-designation">AI / ML</span>
-              <span className="hero-designation" style={{ marginTop: 0 }}>Tech Lead</span>
-            </motion.div>
-            
-            <motion.div
-              className="hero-name-massive"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.3, ease: easeCustom }}
-            >
-              Sinha
-            </motion.div>
-          </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
+
+      {/* Scroll cue into the 3D laptop dive */}
+      <motion.div className="hero-scroll-cue" aria-hidden="true" style={{ opacity: scrollCueOpacity }}>
+        <motion.div
+          className="scroll-cue-capsule"
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, delay: 1.5, ease: easeCustom }}
+        >
+          <span className="scroll-cue-track"><span className="scroll-cue-dot" /></span>
+          <span className="scroll-cue-label">Scroll to enter</span>
+        </motion.div>
+      </motion.div>
 
 
 
@@ -853,7 +922,7 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </ReactLenis>
+    </>
   );
 }
 
